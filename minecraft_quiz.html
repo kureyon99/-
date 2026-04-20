@@ -134,13 +134,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:#2a2a2a;font-family:
 #status-msg.fail{color:#ff4444;text-shadow:1px 1px 0 #800}
 #status-msg.success{color:var(--mc-green);text-shadow:1px 1px 0 #2a5a1a}
 
-/* 作る！ button row — below craft grid */
+/* 作る！ button row — large, fills width below craft grid */
 #craft-btn-row{
-  padding:8px 14px;
-  display:flex;align-items:center;justify-content:center;gap:10px;
+  padding:10px 16px;
+  display:flex;align-items:center;justify-content:center;
   border-top:3px solid var(--mc-darker);
   background:#9a9a9a;
-  flex-shrink:0;min-height:58px;
+  flex-shrink:0;min-height:70px;
 }
 
 /* ===== RIGHT PANEL: Inventory ===== */
@@ -217,12 +217,15 @@ html,body{width:100%;height:100%;overflow:hidden;background:#2a2a2a;font-family:
 .mc-btn:hover{filter:brightness(1.15)}
 .mc-btn:active{border-color:var(--mc-darker) #aaa #aaa var(--mc-darker);filter:brightness(.9)}
 
-/* 作る！ — big green hero button */
+/* 作る！ — big green hero button, fills the row */
 .mc-btn.craft-main{
   background:var(--mc-green);
   border-color:var(--mc-gl) var(--mc-gd) var(--mc-gd) var(--mc-gl);
-  font-size:clamp(20px,2.8vw,28px);
-  padding:12px 42px;min-height:52px;
+  font-size:clamp(22px,3vw,32px);
+  padding:14px 0;
+  width:80%;max-width:560px;
+  min-height:54px;
+  justify-content:center;
   border-width:4px;letter-spacing:2px;
   box-shadow:0 5px 16px rgba(0,0,0,.45);
 }
@@ -230,16 +233,45 @@ html,body{width:100%;height:100%;overflow:hidden;background:#2a2a2a;font-family:
 .mc-btn.green{background:var(--mc-green);border-color:var(--mc-gl) var(--mc-gd) var(--mc-gd) var(--mc-gl)}
 .mc-btn.green:active{border-color:var(--mc-gd) var(--mc-gl) var(--mc-gl) var(--mc-gd)}
 
-/* Bottom bar */
+/* Bottom bar — 3 large colored buttons */
 #bottom-bar{
-  height:50px;min-height:50px;
+  height:62px;min-height:62px;
   border-top:3px solid var(--mc-darker);
-  background:#8b8b8b;
-  display:flex;align-items:center;justify-content:center;
-  gap:10px;padding:0 14px;flex-shrink:0;
+  background:#707070;
+  display:flex;align-items:stretch;
+  padding:6px 8px;
+  gap:8px;
+  flex-shrink:0;
 }
+/* Shared base for the 3 sub-buttons */
+.mc-btn.sub{
+  flex:1;
+  justify-content:center;
+  font-size:clamp(13px,1.8vw,20px);
+  padding:0;
+  min-height:0;
+}
+/* リセット — blue */
+.mc-btn.sub.reset-btn{
+  background:#3a7fc1;
+  border-color:#6db0f0 #1a4f8a #1a4f8a #6db0f0;
+}
+.mc-btn.sub.reset-btn:active{border-color:#1a4f8a #6db0f0 #6db0f0 #1a4f8a}
+/* ヒント — orange */
+.mc-btn.sub.hint-btn{
+  background:#c87820;
+  border-color:#f0aa50 #8a4a08 #8a4a08 #f0aa50;
+}
+.mc-btn.sub.hint-btn:active{border-color:#8a4a08 #f0aa50 #f0aa50 #8a4a08}
+/* 次へ — purple */
+.mc-btn.sub.next-btn{
+  background:#7a3ab8;
+  border-color:#aa70e8 #4a1878 #4a1878 #aa70e8;
+}
+.mc-btn.sub.next-btn:active{border-color:#4a1878 #aa70e8 #aa70e8 #4a1878}
 
-/* Success modal */
+.mc-btn.green{background:var(--mc-green);border-color:var(--mc-gl) var(--mc-gd) var(--mc-gd) var(--mc-gl)}
+.mc-btn.green:active{border-color:var(--mc-gd) var(--mc-gl) var(--mc-gl) var(--mc-gd)}
 #success-modal{position:fixed;inset:0;background:rgba(0,0,0,.88);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:300}
 #success-modal.show{display:flex}
 #success-item-img{width:180px;height:180px;object-fit:contain;image-rendering:pixelated;animation:successSpin .6s cubic-bezier(.175,.885,.32,1.275) forwards;filter:drop-shadow(0 0 30px rgba(255,215,0,.7))}
@@ -262,9 +294,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#2a2a2a;font-family:
   #target-name{font-size:14px}
   #materials-bar{padding:4px 10px;min-height:36px}
   .mat-tag{font-size:12px;padding:3px 6px}
-  #craft-btn-row{min-height:46px;padding:5px 10px}
-  .mc-btn.craft-main{font-size:16px;padding:8px 28px;min-height:40px}
-  #bottom-bar{height:40px;min-height:40px}
+  #craft-btn-row{min-height:50px;padding:6px 10px}
+  .mc-btn.craft-main{font-size:16px;min-height:38px}
+  #bottom-bar{height:46px;min-height:46px;padding:4px 6px}
+  .mc-btn.sub{font-size:12px}
   .craft-slot{width:clamp(72px,11vw,110px);height:clamp(72px,11vw,110px)}
   #result-slot{width:clamp(72px,11vw,110px);height:clamp(72px,11vw,110px)}
 }
@@ -313,9 +346,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:#2a2a2a;font-family:
     </div>
   </div>
   <div id="bottom-bar">
-    <button class="mc-btn" id="btn-reset">🔄 リセット</button>
-    <button class="mc-btn" id="btn-hint">💡 ヒント</button>
-    <button class="mc-btn" id="btn-next">➡ 次へ</button>
+    <button class="mc-btn sub reset-btn" id="btn-reset">🔄 リセット</button>
+    <button class="mc-btn sub hint-btn"  id="btn-hint">💡 ヒント</button>
+    <button class="mc-btn sub next-btn"  id="btn-next">➡ 次へ</button>
   </div>
 </div>
 
