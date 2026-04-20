@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>マイクラ クラフトクイズ</title>
+<style>
+:root {
+  --mc-bg: #c6c6c6;
+  --mc-dark: #555555;
+  --mc-darker: #373737;
+  --mc-shadow: #8b8b8b;
+  --mc-slot: #8b8b8b;
+  --mc-slot-border-tl: #373737;
+  --mc-slot-border-br: #ffffff;
+  --mc-panel-border-tl: #ffffff;
+  --mc-panel-border-br: #555555;
+  --mc-text: #404040;
+  --mc-green: #5a9e4a;
+  --mc-green-light: #7acc5a;
+  --mc-green-dark: #3d7a2a;
+  --mc-highlight: #ffff55;
+  --mc-complete: #55ff55;
+  --mc-selected-bg: #6e9fd8;
+  --mc-selected-tl: #4a78b0;
+  --mc-selected-br: #a8d4ff;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0; padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: #2a2a2a;
+  font-family: "Courier New", "Monaco", "Hiragino Kaku Gothic ProN", "Meiryo", monospace;
+  color: var(--mc-text);
+}
+
+/* ========= MAIN CONTAINER ========= */
+#app {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--mc-bg);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ========= TOP BAR ========= */
+#topbar {
+  height: 36px;
+  min-height: 36px;
+  background: #484848;
+  border-bottom: 3px solid var(--mc-darker);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 0 10px;
+}
+#topbar-title {
+  color: #fff;
+  font-size: 13px;
+  font-weight: bold;
+  text-shadow: 2px 2px 0 #000;
+  letter-spacing: 1px;
+}
+#topbar-counter {
+  color: #aaa;
+  font-size: 10px;
+  text-shadow: 1px 1px 0 #000;
+}
+
+/* ========= MAIN 3-COLUMN ========= */
+#main {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ---- LEFT: Target ---- */
+#left-panel {
+  width: 20%;
+  min-width: 140px;
+  max-width: 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px 8px;
+  border-right: 3px solid var(--mc-darker);
+  background: var(--mc-bg);
+}
+#target-label {
+  font-size: clamp(12px, 1.8vw, 18px);
+  font-weight: bold;
+  color: var(--mc-text);
+  text-shadow: 1px 1px 0 #fff;
+  text-align: center;
+  line-height: 1.6;
+}
+#target-slot {
+  width: clamp(90px, 16vw, 150px);
+  height: clamp(90px, 16vw, 150px);
+  background: var(--mc-slot);
+  border: 3px solid;
+  border-color: var(--mc-slot-border-tl) var(--mc-slot-border-br) var(--mc-slot-border-br) var(--mc-slot-border-tl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+#target-slot img {
+  width: 75%; height: 75%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+#target-name {
+  font-size: clamp(9px, 1.3vw, 14px);
+  font-weight: bold;
+  color: var(--mc-text);
+  text-shadow: 1px 1px 0 #fff;
+  text-align: center;
+  line-height: 1.6;
+  max-width: 100%;
+  word-break: keep-all;
+}
+
+/* ---- CENTER: Crafting ---- */
+#center-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px;
+  min-width: 0;
+}
+#crafting-frame {
+  background: var(--mc-bg);
+  border: 3px solid;
+  border-color: var(--mc-panel-border-tl) var(--mc-panel-border-br) var(--mc-panel-border-br) var(--mc-panel-border-tl);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+#crafting-title {
+  font-size: clamp(9px, 1.2vw, 12px);
+  font-weight: bold;
+  color: var(--mc-text);
+  text-shadow: 1px 1px 0 #fff;
+}
+#craft-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+#craft-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 3px;
+  background: var(--mc-slot);
+  padding: 3px;
+  border: 2px solid var(--mc-darker);
+}
+
+/* ===== ENLARGED craft slots for accessibility ===== */
+.craft-slot {
+  width: clamp(70px, 10.5vw, 100px);
+  height: clamp(70px, 10.5vw, 100px);
+  background: var(--mc-slot);
+  border: 3px solid;
+  border-color: var(--mc-slot-border-tl) var(--mc-slot-border-br) var(--mc-slot-border-br) var(--mc-slot-border-tl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.08s;
+}
+.craft-slot:hover { background: #999; }
+.craft-slot:active {
+  border-color: var(--mc-slot-border-br) var(--mc-slot-border-tl) var(--mc-slot-border-tl) var(--mc-slot-border-br);
+}
+.craft-slot img.placed-item {
+  width: 72%; height: 72%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  position: relative;
+  z-index: 3;
+}
+.craft-slot img.hint-ghost {
+  position: absolute;
+  width: 65%; height: 65%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  opacity: 0.28;
+  z-index: 1;
+  pointer-events: none;
+  filter: brightness(1.2);
+}
+
+/* Arrow + Result */
+#arrow-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+#arrow-icon {
+  width: 36px; height: 36px;
+  background: var(--mc-bg);
+  border: 2px solid;
+  border-color: var(--mc-panel-border-tl) var(--mc-panel-border-br) var(--mc-panel-border-br) var(--mc-panel-border-tl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: var(--mc-text);
+}
+#result-slot {
+  width: clamp(70px, 10vw, 96px);
+  height: clamp(70px, 10vw, 96px);
+  background: var(--mc-slot);
+  border: 3px solid;
+  border-color: var(--mc-slot-border-tl) var(--mc-slot-border-br) var(--mc-slot-border-br) var(--mc-slot-border-tl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+#result-slot img {
+  width: 75%; height: 75%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+/* Status message */
+#status-msg {
+  font-size: clamp(10px, 1.4vw, 15px);
+  font-weight: bold;
+  color: transparent;
+  text-shadow: none;
+  min-height: 22px;
+  text-align: center;
+  transition: color 0.3s;
+}
+#status-msg.fail {
+  color: #ff4444;
+  text-shadow: 1px 1px 0 #800;
+}
+#status-msg.success {
+  color: var(--mc-green);
+  text-shadow: 1px 1px 0 #2a5a1a;
+}
+
+/* ---- RIGHT: Inventory ---- */
+#right-panel {
+  width: 30%;
+  min-width: 220px;
+  max-width: 420px;
+  border-left: 3px solid var(--mc-darker);
+  display: flex;
+  flex-direction: column;
+  background: var(--mc-bg);
+  overflow: hidden;
+}
+#inv-header {
+  background: #484848;
+  border-bottom: 2px solid var(--mc-darker);
+  padding: 6px;
+  text-align: center;
+}
+#inv-header-text {
+  color: #fff;
+  font-size: clamp(10px, 1.3vw, 14px);
+  font-weight: bold;
+  text-shadow: 2px 2px 0 #000;
+  letter-spacing: 1px;
+}
+
+/* ===== ENLARGED Required Materials Bar ===== */
+#materials-bar {
+  background: #aaa;
+  border-bottom: 2px solid var(--mc-darker);
+  padding: 8px 10px;
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: clamp(12px, 1.6vw, 18px);
+  font-weight: bold;
+  line-height: 1.5;
+}
+.mat-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  background: var(--mc-bg);
+  border: 2px solid;
+  border-color: var(--mc-panel-border-tl) var(--mc-panel-border-br) var(--mc-panel-border-br) var(--mc-panel-border-tl);
+  white-space: nowrap;
+  transition: all 0.3s;
+  font-size: clamp(12px, 1.6vw, 18px);
+}
+.mat-tag img {
+  width: 24px; height: 24px;
+  image-rendering: pixelated;
+  vertical-align: middle;
+}
+.mat-tag.done {
+  color: var(--mc-green-dark);
+  background: #b6e8a0;
+  border-color: #7acc5a #3d7a2a #3d7a2a #7acc5a;
+}
+
+/* ===== ENLARGED Inventory Grid ===== */
+#inv-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  padding: 6px;
+  align-content: start;
+  overflow-y: auto;
+}
+.inv-slot {
+  aspect-ratio: 1;
+  background: var(--mc-slot);
+  border: 3px solid;
+  border-color: var(--mc-slot-border-tl) var(--mc-slot-border-br) var(--mc-slot-border-br) var(--mc-slot-border-tl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.1s;
+  min-height: 60px;
+}
+.inv-slot:hover { background: #999; }
+.inv-slot:active {
+  border-color: var(--mc-slot-border-br) var(--mc-slot-border-tl) var(--mc-slot-border-tl) var(--mc-slot-border-br);
+}
+.inv-slot img {
+  width: 75%; height: 75%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.inv-slot.selected {
+  background: var(--mc-selected-bg);
+  border-color: var(--mc-selected-tl) var(--mc-selected-br) var(--mc-selected-br) var(--mc-selected-tl);
+}
+.inv-slot.hint-glow {
+  animation: invGlow 0.6s ease-in-out infinite alternate;
+}
+@keyframes invGlow {
+  from { background: var(--mc-slot); box-shadow: none; }
+  to { background: #f0d050; box-shadow: inset 0 0 12px rgba(255,215,0,0.6); }
+}
+.inv-slot .tooltip {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a0a30;
+  color: #fff;
+  font-size: 10px;
+  padding: 3px 7px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 100;
+  border: 1px solid #5028a0;
+  display: none;
+  line-height: 1.4;
+}
+.inv-slot:hover .tooltip { display: block; }
+
+/* ========= BOTTOM BAR — "作る！" is prominent ========= */
+#bottom-bar {
+  height: 64px;
+  min-height: 64px;
+  border-top: 3px solid var(--mc-darker);
+  background: #8b8b8b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 10px;
+}
+.mc-btn {
+  font-family: inherit;
+  font-size: clamp(10px, 1.3vw, 14px);
+  font-weight: bold;
+  color: #fff;
+  background: #6e6e6e;
+  border: 3px solid;
+  border-color: #aaa var(--mc-darker) var(--mc-darker) #aaa;
+  padding: 10px 14px;
+  cursor: pointer;
+  text-shadow: 2px 2px 0 #000;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  line-height: 1;
+  transition: filter 0.05s;
+}
+.mc-btn:hover { filter: brightness(1.15); }
+.mc-btn:active {
+  border-color: var(--mc-darker) #aaa #aaa var(--mc-darker);
+  filter: brightness(0.9);
+  padding: 11px 13px 9px 15px;
+}
+
+/* ===== "作る！" button: bigger, green, stands out ===== */
+.mc-btn.craft-main {
+  background: var(--mc-green);
+  border-color: var(--mc-green-light) var(--mc-green-dark) var(--mc-green-dark) var(--mc-green-light);
+  font-size: clamp(16px, 2.2vw, 22px);
+  padding: 12px 28px;
+  min-height: 52px;
+  border-width: 4px;
+  letter-spacing: 2px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+  position: relative;
+}
+.mc-btn.craft-main:active {
+  border-color: var(--mc-green-dark) var(--mc-green-light) var(--mc-green-light) var(--mc-green-dark);
+  padding: 14px 26px 10px 30px;
+}
+.mc-btn.green {
+  background: var(--mc-green);
+  border-color: var(--mc-green-light) var(--mc-green-dark) var(--mc-green-dark) var(--mc-green-light);
+}
+.mc-btn.green:active {
+  border-color: var(--mc-green-dark) var(--mc-green-light) var(--mc-green-light) var(--mc-green-dark);
+}
+
+/* ========= SUCCESS MODAL ========= */
+#success-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.88);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+}
+#success-modal.show { display: flex; }
+#success-item-img {
+  width: 180px; height: 180px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  animation: successSpin 0.6s cubic-bezier(0.175,0.885,0.32,1.275) forwards;
+  filter: drop-shadow(0 0 30px rgba(255,215,0,0.7));
+}
+#success-text {
+  color: #FFD700;
+  font-size: clamp(24px, 5vw, 44px);
+  font-weight: bold;
+  margin-top: 16px;
+  text-shadow: 3px 3px 0 #000;
+  animation: pulse 1s ease-in-out infinite;
+}
+#success-sub {
+  color: #fff;
+  font-size: clamp(12px, 2vw, 18px);
+  margin-top: 8px;
+  text-shadow: 2px 2px 0 #000;
+}
+#success-modal .mc-btn {
+  margin-top: 24px;
+  font-size: 16px;
+  padding: 10px 24px;
+}
+
+@keyframes successSpin {
+  0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+@keyframes pulse {
+  0%,100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+/* ========= SHAKE ========= */
+@keyframes shake {
+  0%,100%{ transform: none; }
+  10%,50%,90%{ transform: translateX(-6px); }
+  30%,70%{ transform: translateX(6px); }
+}
+.shake-anim { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97); }
+
+/* ========= PARTICLES ========= */
+#particles-container {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 310;
+}
+.particle {
+  position: absolute;
+  width: 10px; height: 10px;
+  animation: particleFly 1.2s ease-out forwards;
+  image-rendering: pixelated;
+}
+@keyframes particleFly {
+  0% { opacity: 1; transform: translate(0,0) scale(1) rotate(0deg); }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.2) rotate(360deg); }
+}
+
+/* ========= SCROLLBAR ========= */
+#inv-grid::-webkit-scrollbar { width: 8px; }
+#inv-grid::-webkit-scrollbar-track { background: var(--mc-slot); }
+#inv-grid::-webkit-scrollbar-thumb { background: #555; border: 1px solid var(--mc-darker); }
+
+/* ========= RESPONSIVE ========= */
+@media (max-height: 500px) {
+  #topbar { height: 28px; min-height: 28px; }
+  #topbar-title { font-size: 10px; }
+  #bottom-bar { height: 52px; min-height: 52px; }
+  .mc-btn { padding: 7px 10px; font-size: 10px; }
+  .mc-btn.craft-main { font-size: 14px; padding: 8px 18px; min-height: 42px; }
+  #left-panel { padding: 6px; gap: 6px; }
+  #target-label { font-size: 11px; }
+}
+
+@media (max-width: 700px) {
+  #left-panel { width: 18%; min-width: 100px; padding: 6px; }
+  #right-panel { width: 34%; min-width: 180px; }
+  .craft-slot { width: clamp(56px, 9vw, 74px); height: clamp(56px, 9vw, 74px); }
+  #inv-grid { grid-template-columns: repeat(3, 1fr); }
+  .mat-tag { font-size: 11px; }
+  .mat-tag img { width: 18px; height: 18px; }
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div id="topbar">
+    <span id="topbar-title">⛏ マイクラ クラフトクイズ</span>
+    <span id="topbar-counter"></span>
+  </div>
+
+  <div id="main">
+    <div id="left-panel">
+      <div id="target-label">これを<br>作ろう！</div>
+      <div id="target-slot">
+        <img id="target-img" src="" alt="ターゲット">
+      </div>
+      <div id="target-name"></div>
+    </div>
+
+    <div id="center-panel">
+      <div id="crafting-frame">
+        <div id="crafting-title">作業台</div>
+        <div id="craft-row">
+          <div id="craft-grid"></div>
+          <div id="arrow-area">
+            <div id="arrow-icon">➡</div>
+            <div id="result-slot"></div>
+          </div>
+        </div>
+      </div>
+      <div id="status-msg"></div>
+    </div>
+
+    <div id="right-panel">
+      <div id="inv-header"><span id="inv-header-text">インベントリ</span></div>
+      <div id="materials-bar"></div>
+      <div id="inv-grid"></div>
+    </div>
+  </div>
+
+  <div id="bottom-bar">
+    <button class="mc-btn" id="btn-reset">🔄 リセット</button>
+    <button class="mc-btn" id="btn-hint">💡 ヒント</button>
+    <button class="mc-btn craft-main" id="btn-craft">✅ 作る！</button>
+    <button class="mc-btn" id="btn-next">➡ 次へ</button>
+  </div>
+</div>
+
+<div id="success-modal">
+  <img id="success-item-img" src="" alt="完成">
+  <div id="success-text">できた！すごい！</div>
+  <div id="success-sub"></div>
+  <button class="mc-btn green" id="btn-more">🎮 もっと作る！</button>
+</div>
+
+<div id="particles-container"></div>
+
+<script>
+const IMG = {
+  'arrow': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAATklEQVR4nGNgoDWwsXH7j0+eiRjN+AzBaQC6JkIuwQkWVBiR7wViwKgBg8EARnySd+7cgacBFRUVrGrxuuDcuXMMKioqjOfOnSPPeXQBAPuqFFE0x4U4AAAAAElFTkSuQmCC',
+  'bow': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAU0lEQVR4nGNgGNSgKV7jf0+Kxn8Y/86dO//R1TDh08zFysBQMucGIz5LcBpALMBqALG208YFpNhOGxdQbEDdwhuM334zMCDHP31dQKorKHbBwAMAwowfyc21j9wAAAAASUVORK5CYII=',
+  'bread': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAPElEQVR4nGNgGAWM6AJ3tgT8x6dBxWcDih4UzolpNng1w4BF1hG4PiZiNOADw8AAFmTOjRuPKDVvFJADAGT3CqG4h2JVAAAAAElFTkSuQmCC',
+  'bucket': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAUUlEQVR4nGNgGPKAEZvgpUuX/mMT19PTw6qeKANwGcqCy6Zp06b9t7GxgYsdOXIEq2VMRDkJDxikBqD7n4GBgcHGxoZh2rRpGAE58F4YBQwMAE+oGDJUJB/9AAAAAElFTkSuQmCC',
+  'coal': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAARklEQVR4nO2QuxEAMAhCSaZhEvcvrV3EDBA/KVP4Sg7QAxhKRMRJeuXZVdjMAABVyYrELKCqlz/94JWwILoUaS0k2xGHHziO6RU+0y2e7QAAAABJRU5ErkJggg==',
+  'cobblestone': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAATUlEQVR4nGNgGPKAEZmzatWq/4Q0bNiwgWHZsmVwfSzIkteuXWNgYGBguHXrFoOamhpWNjpgQhfApxnGxmkAqZoxDCCkedQLNPLCMAAAkWZaJqu/GtYAAAAASUVORK5CYII=',
+  'crafting_table': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAoElEQVR4nGNgGGjACGPsWxD1nxSNTgnLGBkYGBiYKHUBC7rAt0k3GB59+8Ygx8XF8OjbN4ZlASIMb968YRARgdDTbIxQ1GO4AFmzHBcXimYREREMF2AYgKz50bdvKJrfvHlD2ABSXYARBuh+7jnHxfDo2xuooW8YGCrk8LsA3UZ0FxH0Arqf0cOEoAGkugAjDBDxDPUr1M8aGFpxuGDoAQCJnWyA+652pgAAAABJRU5ErkJggg==',
+  'diamond': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAWElEQVR4nGNgGN5g6dfX/+Me3/yPTw0TPs07371jYGBgYMBnCFYDkDXDAC5DsBqArpmBgYHhwPGLxLtgkaw6I7rmR2FhjNjU4gVxj2/+l1u1Cm8gjoJhAQBTGihP4RHZqAAAAABJRU5ErkJggg==',
+  'diamond_axe': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAARElEQVR4nGNgGGjAiMxZ+vX1f2R+5db9DI/CwhgZ8AAWdIGd796R5AImQgoWVBj9xydP0ACKXUAxGPxeGDWAHumAEAAAYc0OQcrXkqcAAAAASUVORK5CYII=',
+  'diamond_boots': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAOElEQVR4nGNgGAUDDxiROXGPb/5H5i+SVWfEJ87AwMDARKkLRg1AigW5Vav+o0s+CgtjJCQ3DAAAl7IQDXAXXfIAAAAASUVORK5CYII=',
+  'diamond_chestplate': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAARklEQVR4nGNgGGjAiMxZ+vX1f0IaKrfuZ3gUFgbXx4KuYOe7dwwMDAwMi2TVUQyPe3wTq+EYBhDSgA6YiFE0asCoAYMfAABLORDK1H0PhwAAAABJRU5ErkJggg==',
+  'diamond_helmet': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAARklEQVR4nGNgGPKAEZmz9Ovr/4Q0VG7dz/AoLAyujwVdwc5370hyAYYBDAwMDItk1Rmxicc9vonhQiaSrMMChoEBo2AwAACcng2no+sBYwAAAABJRU5ErkJggg==',
+  'diamond_hoe': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAPElEQVR4nGNgGGjAiE1w6dfX/3e+e4citkhWHataFmyClVv3U+wyOFhQYfQfnzwTpRaMGjBqAFUMoBgAADluC1Apjyq9AAAAAElFTkSuQmCC',
+  'diamond_leggings': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAPklEQVR4nGNgGGjAiMxZ+vX1f2I0RXOLwvWxIEvsfPeOZBcwkayDFAMWyaozLpJVZ8SnhrYuGDVgqBgw8AAAWh8IfWFO4WUAAAAASUVORK5CYII=',
+  'diamond_pickaxe': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAT0lEQVR4nGNgGGjAiC6w9Ovr/zvfvcOraZGsOlwfC7pk5db9VHEZAwMDA0NFqNz/BRVG//GpYcInqaEsQtASvAbcuPuGMgNGXTBUXDDwAABy5xmXmS2SDgAAAABJRU5ErkJggg==',
+  'diamond_shovel': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAP0lEQVR4nGNgoBAw4pJY+vX1/53v3sH5i2TVsaplwmUAsmZ8AKcBxAKiDDhw/CL5NiyoMPpPsQtGDRg1gOYAANoFDlDgv99IAAAAAElFTkSuQmCC',
+  'diamond_sword': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAASUlEQVR4nGNgoCWQW7Xq/9Kvr//jU8NEyJCd797hlSdoACEwasBgMIARl0RTvAZGAqpbeAOneqygIlTu/4IKI8pSIiEw8AZQDABIchDVLzo9jgAAAABJRU5ErkJggg==',
+  'feather': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAOklEQVR4nGNgGPTgzp07//HJM1FqAV4DVq1a9Z+QK2jnApjtZBtAsQsoNiAsLIyRLi4gCGiekIYBAACIaBHJSEGX6AAAAABJRU5ErkJggg==',
+  'flint': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAATklEQVR4nGNgGP4gKirlPz55JkKaHz16xGBj44bTEEZcEtg0HTmyC0M9Xhcggzdv3mAVx2kAum03bpzD6lq8LoAZgst2ggYQsn0UDBYAAJf9G6nSSyeYAAAAAElFTkSuQmCC',
+  'furnace': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAmUlEQVR4nMWSsQ0CMQxF36GrbhALNsoUzJABqJiAKsoAzJE2ksurqdNClXAnEhFo8ht/Jf5f/rJhNKZMrLVPAFVFRPjGnXMTwGHr1ivOfGfwj3hn8ItYVYvBXIvgvS9vIYTCRaQvQgvdETLi/Ui8vJtrPc0txHOCxwprIt6W5hRz6+N0XYAE5FqPUAy24xljPgStLYw/pPF4AdOOiLsPhzQ+AAAAAElFTkSuQmCC',
+  'gold_axe': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAQ0lEQVR4nGNgGGjAiMz5/6HiPzL/5IY5DBYJbxgZ8AAWDJHnu0hyARMhBQsqjP7jkydoAMUuoBgMfi+MGkCPdEAIAABLJw1Nh6o0AAAAAABJRU5ErkJggg==',
+  'gold_boots': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAN0lEQVR4nGNgGAUDDxiROf+vG/1HkdQ8x4hPnIGBgYGJUheMGoAUCycWiPxHl7RIeMNISG4YAACXAhANoapV/AAAAABJRU5ErkJggg==',
+  'gold_chestplate': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAP0lEQVR4nGNgGGjAiMz5/6HiPyENJzfMYbBIeAPXx4Kh4vkuiMma51ANv26E1XBMAwhoQAdMxCgaNWDUgMEPAP+QD8QemxuvAAAAAElFTkSuQmCC',
+  'gold_helmet': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAARElEQVR4nGNgGPKAEZnz/0PFf0IaTm6Yw2CR8AaujwVDxfNdJLkA0wAGBgZGzXOM2MT/XzfCcCETSdZhAcPAgFEwGAAAw0QMs0IbkyEAAAAASUVORK5CYII=',
+  'gold_hoe': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAO0lEQVR4nGNgGGjAiE3w/4eK/wzPd6Eq1DyHVS0LNsGTG+ZQ7DI4WFBh9B+fPBOlFowaMGoAVQygGAAAQ7QKeFHuNcsAAAAASUVORK5CYII=',
+  'gold_ingot': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAP0lEQVR4nGNgGAWM6AL/P1T8x6tBoANFDwoHrvn5Lvy2ap6D62NBkSGgERtgIlnHoDMAJQxOnnxEqXmjgBwAANe9DiZ1OPMzAAAAAElFTkSuQmCC',
+  'gold_leggings': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAPElEQVR4nGNgGGjAiMz5/6HiP1GaBDrg+lhQZJ7vItkFTCTrIMUARs1zjIya5xjxqaGtC0YNGCoGDDwAAJotB60I+MOhAAAAAElFTkSuQmCC',
+  'gold_pickaxe': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAATklEQVR4nGNgGGjAiC7w/0PFf4bnu/Br0jwH18eCLnlywxyquIyBgYGBoSJU7v+CCqP/+NQw4ZPUUBYhaAleA27cfUOZAaMuGCouGHgAAHitGL83+4GGAAAAAElFTkSuQmCC',
+  'gold_shovel': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAPklEQVR4nGNgoBAw4pL4/6HiP8PzXQiFmuewqmXCaTSSZnwAtwFEAqIMOHnyEfk2LKgw+k+xC0YNGDWA5gAALGYMePSNXyUAAAAASUVORK5CYII=',
+  'gold_sword': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAASElEQVR4nGNgoCU4sUDk//8PFf/xqWEiaMrzXXilCRtAAIwaMBgMYMQl0RSvgZGA6hbewKkeK6gIlfu/oMKIwpRIAAy8ARQDAL1yD83smGnlAAAAAElFTkSuQmCC',
+  'iron_axe': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAO0lEQVR4nGNgGFTg9evX/5HxtGnT/hPSw4Iu8Pz5c5IsZSKkYEGFEV5XEDSAYhdQDAa/F0YNoEc6IAQAG4QZIS4UbQoAAAAASUVORK5CYII=',
+  'iron_boots': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAOElEQVR4nGNgGAUDDxiROZcuXfqPzNfT02PEJ87AwMDARKkLRg1AioVp06b9R5fMyspiJCQ3DAAAr7IQDeqjYD4AAAAASUVORK5CYII=',
+  'iron_chestplate': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAARklEQVR4nGNgGGjAiMx5/fr1f0IaVq9ezZCVlQXXx4Ku4Pnz5wwMDAwMenp6KIZfunQJq+EYBhDSgA6YiFE0asCoAYMfAADGQBFGosshwwAAAABJRU5ErkJggg==',
+  'iron_helmet': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAARklEQVR4nGNgGPKAEZnz+vXr/4Q0rF69miErKwuujwVdwfPnz0lyAYYBDAwMDHp6eozYxC9duoThQiaSrMMChoEBo2AwAAD9Iw3HxxKqkQAAAABJRU5ErkJggg==',
+  'iron_hoe': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAPElEQVR4nGNgGGjAiE3w9evX/58/f44ipqenh1UtCzbB1atXU+wyOFhQYfQfnzwTpRaMGjBqAFUMoBgAAICwC2SphvLWAAAAAElFTkSuQmCC',
+  'iron_ingot': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAQklEQVR4nGNgGAWM6AKvX7/+j0+DqKgoih4UDkzz8+fP8dqqp6cH18eCLEFIIzbARLKOQWcAShgcOXKEUvNGATkAAB2qEBLphp1DAAAAAElFTkSuQmCC',
+  'iron_leggings': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAPklEQVR4nGNgGGjAiMx5/fr1f2I0iYqKwvWxIEs8f/6cZBcwkayDFAP09PQY9fT0GPGpoa0LRg0YKgYMPAAA35gH5TJteeIAAAAASUVORK5CYII=',
+  'iron_pickaxe': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAT0lEQVR4nGNgGGjAiC7w+vXr/8+fP8erSU9PD66PBV1y9erVVHEZAwMDA0NFqNz/BRVG//GpYcInqaEsQtASvAbcuPuGMgNGXTBUXDDwAADAORmrm3UIZQAAAABJRU5ErkJggg==',
+  'iron_shovel': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAP0lEQVR4nGNgoBAw4pJ4/fr1/+fPn8P5enp6WNUy4TIAWTM+gNMAYgFRBhw5coR8GxZUGP2n2AWjBowaQHMAACtSDmRpRNoCAAAAAElFTkSuQmCC',
+  'iron_sword': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAASklEQVR4nGNgoCWYNm3a/9evX//Hp4aJkCHPnz/HK0/QAEJg1IDBYAAjLommeA2MBFS38AZO9VhBRajc/wUVRpSlREJg4A2gGAAAuvMRgZZp6WoAAAAASUVORK5CYII=',
+  'planks': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAATUlEQVR4nGNgGPKAEZlz53DTf0Iadm3dxZDVcQSujwVZ8tHdGwwMDAwMN248YtDQkMPKRgdM6AL4NMPYOA0gVTOGAYQ0j3qBRl4YBgAA4hBaP/Y96mYAAAAASUVORK5CYII=',
+  'stick': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAJElEQVR4nGNgGNRgQYXR/4pQuf/41DBRasmoAaMGDA4DBh4AAJYGBEogTvUOAAAAAElFTkSuQmCC',
+  'stone_axe': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAARElEQVR4nGNgGGjAiMxZtWrVf2T+rl27GObMmcPIgAewoAvcu3ePJBcwEVKwoMLoPz55ggZQ7AKKweD3wqgB9EgHhAAAaKEORrSv6BAAAAAASUVORK5CYII=',
+  'stone_hoe': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAPElEQVR4nGNgGGjAiE1w1apV/+/du4ciVlFRgVUtCzbBXbt2UewyOFhQYfQfnzwTpRaMGjBqAFUMoBgAAAB+C5F+dvBUAAAAAElFTkSuQmCC',
+  'stone_pickaxe': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAS0lEQVR4nGNgGGjAiC6watWq//fu3cOrqaKiAq6PBV1y165dVHEZxKZQuf8LKoz+41PDhE9SQ1mEoCV4Dbhx9w1lBoy6YKi4YOABADLbGdgj841wAAAAAElFTkSuQmCC',
+  'stone_shovel': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAP0lEQVR4nGNgoBAw4pJYtWrV/3v37sH5FRUVWNUy4TIAWTM+gNMAYgFRBty5c4d8GxZUGP2n2AWjBowaQHMAAJFSDpEIsM3lAAAAAElFTkSuQmCC',
+  'stone_sword': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAASUlEQVR4nGNgoCVISUn5v2rVqv/41DARMuTevXt45QkaQAiMGjAYDGDEJdEUr4GRgOoW3sCpHiuoCJX7v6DCiLKUSAgMvAEUAwBnxxANYZdXCgAAAABJRU5ErkJggg==',
+  'string': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAI0lEQVR4nGNgGPTgzp07//HJMxEy4MaNG6MuGHXBcHABzQEAEl8krwRg2DYAAAAASUVORK5CYII=',
+  'torch': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAPElEQVR4nGNgGNTg/wmj//9PGP3Hp4YJp+Y7AScYzr1hYDj3BsImByyoMPpfESpHnguIBaMGDAsDhgEAAHlIE5AJy1MwAAAAAElFTkSuQmCC',
+  'wheat': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAATUlEQVR4nGNgGGjAiEviw52U/wwMDAw3btxgYGBgYLDwOYJVLROlLqDYALzgw52U/ye22PynqQsoNoAFn+SGOecYbtx9Q1sXjBowGAAA9K4RuSefx0IAAAAASUVORK5CYII=',
+  'wood_axe': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAARElEQVR4nGNgGGjAiMy5tD7vPzJ/w4ZdDHULbzAy4AEs6AKP7t4lyQVMhBQsqDD6j0+eoAEUu4BiMPi9MGoAPdIBIQAAbaAOSCi/u04AAAAASUVORK5CYII=',
+  'wood_hoe': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAPElEQVR4nGNgGGjAiE3w0vq8/4/u3kUR8ynZilUtCzbBDRt2UewyOFhQYfQfnzwTpRaMGjBqAFUMoBgAAL8NC32wr+gTAAAAAElFTkSuQmCC',
+  'wood_pickaxe': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAT0lEQVR4nGNgGGjAiC5waX3e/0d37+LV5FOyFa6PBV1yw4ZdVHEZAwMDA0NFqNz/BRVG//GpYcInqaEsQtASvAbcuPuGMgNGXTBUXDDwAADwShnEsWl+aQAAAABJRU5ErkJggg==',
+  'wood_shovel': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAQElEQVR4nGNgoBAw4pK4tD7v/6O7d+F8n5KtWNUy4TIAWTM+gNMAYgFRBpy7TJxrsIIFFUb/KXbBqAGjBtAcAABXlA59RtRktgAAAABJRU5ErkJggg==',
+  'wood_sword': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAASUlEQVR4nGNgoCVoitf4f2l93n98apgIGfLo7l288gQNIARGDRgMBjDikmiK18BIQHULb+BUjxVUhMr9X1BhRFlKJAQG3gCKAQC2/Q/dSbe4SgAAAABJRU5ErkJggg=='
+};
+const INVENTORY_KEYS = [
+  'diamond', 'iron_ingot', 'gold_ingot', 'cobblestone',
+  'planks', 'stick', 'coal', 'wheat',
+  'feather', 'flint', 'string'
+];
+
+const items = {
+  diamond_pickaxe:    { name: 'ダイヤモンドのツルハシ' },
+  iron_pickaxe:       { name: '鉄のツルハシ' },
+  gold_pickaxe:       { name: '金のツルハシ' },
+  stone_pickaxe:      { name: '石のツルハシ' },
+  wood_pickaxe:       { name: '木のツルハシ' },
+  diamond_sword:      { name: 'ダイヤモンドの剣' },
+  iron_sword:         { name: '鉄の剣' },
+  gold_sword:         { name: '金の剣' },
+  stone_sword:        { name: '石の剣' },
+  wood_sword:         { name: '木の剣' },
+  diamond_axe:        { name: 'ダイヤモンドの斧' },
+  iron_axe:           { name: '鉄の斧' },
+  gold_axe:           { name: '金の斧' },
+  stone_axe:          { name: '石の斧' },
+  wood_axe:           { name: '木の斧' },
+  diamond_shovel:     { name: 'ダイヤモンドのスコップ' },
+  iron_shovel:        { name: '鉄のスコップ' },
+  gold_shovel:        { name: '金のスコップ' },
+  stone_shovel:       { name: '石のスコップ' },
+  wood_shovel:        { name: '木のスコップ' },
+  diamond_hoe:        { name: 'ダイヤモンドのクワ' },
+  iron_hoe:           { name: '鉄のクワ' },
+  gold_hoe:           { name: '金のクワ' },
+  stone_hoe:          { name: '石のクワ' },
+  wood_hoe:           { name: '木のクワ' },
+  diamond_helmet:     { name: 'ダイヤモンドのヘルメット' },
+  iron_helmet:        { name: '鉄のヘルメット' },
+  gold_helmet:        { name: '金のヘルメット' },
+  diamond_chestplate: { name: 'ダイヤモンドのチェストプレート' },
+  iron_chestplate:    { name: '鉄のチェストプレート' },
+  gold_chestplate:    { name: '金のチェストプレート' },
+  diamond_leggings:   { name: 'ダイヤモンドのレギンス' },
+  iron_leggings:      { name: '鉄のレギンス' },
+  gold_leggings:      { name: '金のレギンス' },
+  diamond_boots:      { name: 'ダイヤモンドのブーツ' },
+  iron_boots:         { name: '鉄のブーツ' },
+  gold_boots:         { name: '金のブーツ' },
+  bow:                { name: '弓' },
+  arrow:              { name: '矢' },
+  bread:              { name: 'パン' },
+  torch:              { name: '松明' },
+  bucket:             { name: 'バケツ' },
+  crafting_table:     { name: '作業台' },
+  furnace:            { name: 'かまど' },
+  diamond:            { name: 'ダイヤモンド' },
+  iron_ingot:         { name: '鉄インゴット' },
+  gold_ingot:         { name: '金インゴット' },
+  cobblestone:        { name: '丸石' },
+  stick:              { name: '木の棒' },
+  planks:             { name: '板材' },
+  coal:               { name: '石炭' },
+  wheat:              { name: '小麦' },
+  feather:            { name: '羽根' },
+  flint:              { name: '火打石' },
+  string:             { name: '糸' },
+};
+
+// Add img property from IMG map
+Object.keys(items).forEach(k => { items[k].img = IMG[k] || ''; });
+
+const recipes = [
+  { id:'diamond_pickaxe', grid:[['diamond','diamond','diamond'],[null,'stick',null],[null,'stick',null]] },
+  { id:'iron_pickaxe',    grid:[['iron_ingot','iron_ingot','iron_ingot'],[null,'stick',null],[null,'stick',null]] },
+  { id:'gold_pickaxe',    grid:[['gold_ingot','gold_ingot','gold_ingot'],[null,'stick',null],[null,'stick',null]] },
+  { id:'stone_pickaxe',   grid:[['cobblestone','cobblestone','cobblestone'],[null,'stick',null],[null,'stick',null]] },
+  { id:'wood_pickaxe',    grid:[['planks','planks','planks'],[null,'stick',null],[null,'stick',null]] },
+  { id:'diamond_sword',   grid:[[null,'diamond',null],[null,'diamond',null],[null,'stick',null]] },
+  { id:'iron_sword',      grid:[[null,'iron_ingot',null],[null,'iron_ingot',null],[null,'stick',null]] },
+  { id:'gold_sword',      grid:[[null,'gold_ingot',null],[null,'gold_ingot',null],[null,'stick',null]] },
+  { id:'stone_sword',     grid:[[null,'cobblestone',null],[null,'cobblestone',null],[null,'stick',null]] },
+  { id:'wood_sword',      grid:[[null,'planks',null],[null,'planks',null],[null,'stick',null]] },
+  { id:'diamond_axe',     grid:[['diamond','diamond',null],['diamond','stick',null],[null,'stick',null]] },
+  { id:'iron_axe',        grid:[['iron_ingot','iron_ingot',null],['iron_ingot','stick',null],[null,'stick',null]] },
+  { id:'gold_axe',        grid:[['gold_ingot','gold_ingot',null],['gold_ingot','stick',null],[null,'stick',null]] },
+  { id:'stone_axe',       grid:[['cobblestone','cobblestone',null],['cobblestone','stick',null],[null,'stick',null]] },
+  { id:'wood_axe',        grid:[['planks','planks',null],['planks','stick',null],[null,'stick',null]] },
+  { id:'diamond_shovel',  grid:[[null,'diamond',null],[null,'stick',null],[null,'stick',null]] },
+  { id:'iron_shovel',     grid:[[null,'iron_ingot',null],[null,'stick',null],[null,'stick',null]] },
+  { id:'gold_shovel',     grid:[[null,'gold_ingot',null],[null,'stick',null],[null,'stick',null]] },
+  { id:'stone_shovel',    grid:[[null,'cobblestone',null],[null,'stick',null],[null,'stick',null]] },
+  { id:'wood_shovel',     grid:[[null,'planks',null],[null,'stick',null],[null,'stick',null]] },
+  { id:'diamond_hoe',     grid:[['diamond','diamond',null],[null,'stick',null],[null,'stick',null]] },
+  { id:'iron_hoe',        grid:[['iron_ingot','iron_ingot',null],[null,'stick',null],[null,'stick',null]] },
+  { id:'gold_hoe',        grid:[['gold_ingot','gold_ingot',null],[null,'stick',null],[null,'stick',null]] },
+  { id:'stone_hoe',       grid:[['cobblestone','cobblestone',null],[null,'stick',null],[null,'stick',null]] },
+  { id:'wood_hoe',        grid:[['planks','planks',null],[null,'stick',null],[null,'stick',null]] },
+  { id:'diamond_helmet',     grid:[['diamond','diamond','diamond'],['diamond',null,'diamond'],[null,null,null]] },
+  { id:'iron_helmet',        grid:[['iron_ingot','iron_ingot','iron_ingot'],['iron_ingot',null,'iron_ingot'],[null,null,null]] },
+  { id:'gold_helmet',        grid:[['gold_ingot','gold_ingot','gold_ingot'],['gold_ingot',null,'gold_ingot'],[null,null,null]] },
+  { id:'diamond_chestplate', grid:[['diamond',null,'diamond'],['diamond','diamond','diamond'],['diamond','diamond','diamond']] },
+  { id:'iron_chestplate',    grid:[['iron_ingot',null,'iron_ingot'],['iron_ingot','iron_ingot','iron_ingot'],['iron_ingot','iron_ingot','iron_ingot']] },
+  { id:'gold_chestplate',    grid:[['gold_ingot',null,'gold_ingot'],['gold_ingot','gold_ingot','gold_ingot'],['gold_ingot','gold_ingot','gold_ingot']] },
+  { id:'diamond_leggings',   grid:[['diamond','diamond','diamond'],['diamond',null,'diamond'],['diamond',null,'diamond']] },
+  { id:'iron_leggings',      grid:[['iron_ingot','iron_ingot','iron_ingot'],['iron_ingot',null,'iron_ingot'],['iron_ingot',null,'iron_ingot']] },
+  { id:'gold_leggings',      grid:[['gold_ingot','gold_ingot','gold_ingot'],['gold_ingot',null,'gold_ingot'],['gold_ingot',null,'gold_ingot']] },
+  { id:'diamond_boots',      grid:[[null,null,null],['diamond',null,'diamond'],['diamond',null,'diamond']] },
+  { id:'iron_boots',         grid:[[null,null,null],['iron_ingot',null,'iron_ingot'],['iron_ingot',null,'iron_ingot']] },
+  { id:'gold_boots',         grid:[[null,null,null],['gold_ingot',null,'gold_ingot'],['gold_ingot',null,'gold_ingot']] },
+  { id:'bow',             grid:[[null,'stick','string'],['stick',null,'string'],[null,'stick','string']] },
+  { id:'arrow',           grid:[[null,'flint',null],[null,'stick',null],[null,'feather',null]] },
+  { id:'bread',           grid:[[null,null,null],['wheat','wheat','wheat'],[null,null,null]] },
+  { id:'torch',           grid:[[null,'coal',null],[null,'stick',null],[null,null,null]] },
+  { id:'bucket',          grid:[[null,null,null],['iron_ingot',null,'iron_ingot'],[null,'iron_ingot',null]] },
+  { id:'crafting_table',  grid:[[null,null,null],['planks','planks',null],['planks','planks',null]] },
+  { id:'furnace',         grid:[['cobblestone','cobblestone','cobblestone'],['cobblestone',null,'cobblestone'],['cobblestone','cobblestone','cobblestone']] },
+];
+
+// =====================================================
+// GAME ENGINE
+// =====================================================
+const game = {
+  currentRecipe: null,
+  gridState: Array(9).fill(null),
+  selectedItem: null,
+  hintActive: false,
+  audioCtx: null,
+  voices: [],
+  questionCount: 0,
+  correctCount: 0,
+
+  init() {
+    this.buildCraftGrid();
+    this.buildInventory();
+
+    document.getElementById('btn-reset').addEventListener('click', () => this.resetGrid());
+    document.getElementById('btn-hint').addEventListener('click',  () => this.toggleHint());
+    document.getElementById('btn-craft').addEventListener('click', () => this.checkRecipe());
+    document.getElementById('btn-next').addEventListener('click',  () => this.nextQuestion());
+    document.getElementById('btn-more').addEventListener('click',  () => this.nextQuestion());
+
+    const initAudio = () => {
+      if (!this.audioCtx) {
+        this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (this.audioCtx.state === 'suspended') {
+        this.audioCtx.resume();
+      }
+    };
+    document.addEventListener('touchstart', initAudio, { once: true });
+    document.addEventListener('click', initAudio, { once: true });
+
+    if (window.speechSynthesis) {
+      this.voices = speechSynthesis.getVoices();
+      speechSynthesis.onvoiceschanged = () => {
+        this.voices = speechSynthesis.getVoices();
+      };
+    }
+
+    this.nextQuestion();
+  },
+
+  speak(text) {
+    try {
+      if (!window.speechSynthesis) return;
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'ja-JP';
+      u.rate = 0.9;
+      u.pitch = 1.05;
+      const jpVoice = this.voices.find(v => v.lang && v.lang.includes('ja'));
+      if (jpVoice) u.voice = jpVoice;
+      speechSynthesis.speak(u);
+    } catch(e) {}
+  },
+
+  playSound(type) {
+    if (!this.audioCtx) return;
+    try {
+      const ctx = this.audioCtx;
+      const now = ctx.currentTime;
+      if (type === 'click') {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.type = 'square';
+        o.frequency.setValueAtTime(600, now);
+        o.frequency.exponentialRampToValueAtTime(200, now + 0.06);
+        g.gain.setValueAtTime(0.12, now);
+        g.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+        o.start(now); o.stop(now + 0.06);
+      } else if (type === 'place') {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.type = 'square';
+        o.frequency.setValueAtTime(250, now);
+        o.frequency.exponentialRampToValueAtTime(500, now + 0.06);
+        g.gain.setValueAtTime(0.18, now);
+        g.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+        o.start(now); o.stop(now + 0.1);
+      } else if (type === 'remove') {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.type = 'triangle';
+        o.frequency.setValueAtTime(500, now);
+        o.frequency.exponentialRampToValueAtTime(180, now + 0.08);
+        g.gain.setValueAtTime(0.12, now);
+        g.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+        o.start(now); o.stop(now + 0.08);
+      } else if (type === 'success') {
+        [523, 659, 784, 1047].forEach((freq, i) => {
+          const o = ctx.createOscillator(), g = ctx.createGain();
+          o.connect(g); g.connect(ctx.destination);
+          o.type = 'triangle';
+          o.frequency.value = freq;
+          const t = now + i * 0.12;
+          g.gain.setValueAtTime(0.25, t);
+          g.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+          o.start(t); o.stop(t + 0.35);
+        });
+      } else if (type === 'fail') {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.type = 'sawtooth';
+        o.frequency.setValueAtTime(200, now);
+        o.frequency.exponentialRampToValueAtTime(80, now + 0.25);
+        g.gain.setValueAtTime(0.18, now);
+        g.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+        o.start(now); o.stop(now + 0.25);
+      }
+    } catch(e) {}
+  },
+
+  vibrate(ms) {
+    try { if (navigator.vibrate) navigator.vibrate(ms); } catch(e) {}
+  },
+
+  buildCraftGrid() {
+    const grid = document.getElementById('craft-grid');
+    grid.innerHTML = '';
+    for (let i = 0; i < 9; i++) {
+      const slot = document.createElement('div');
+      slot.className = 'craft-slot';
+      slot.dataset.idx = i;
+      const handler = (e) => { e.preventDefault(); this.handleCraftClick(i); };
+      slot.addEventListener('click', handler);
+      slot.addEventListener('touchend', handler);
+      grid.appendChild(slot);
+    }
+  },
+
+  buildInventory() {
+    const grid = document.getElementById('inv-grid');
+    grid.innerHTML = '';
+    INVENTORY_KEYS.forEach(key => {
+      const slot = document.createElement('div');
+      slot.className = 'inv-slot';
+      slot.dataset.itemId = key;
+      const img = document.createElement('img');
+      img.src = items[key].img;
+      img.alt = items[key].name;
+      img.draggable = false;
+      slot.appendChild(img);
+      const tip = document.createElement('div');
+      tip.className = 'tooltip';
+      tip.textContent = items[key].name;
+      slot.appendChild(tip);
+      const handler = (e) => { e.preventDefault(); this.handleInvClick(key); };
+      slot.addEventListener('click', handler);
+      slot.addEventListener('touchend', handler);
+      grid.appendChild(slot);
+    });
+  },
+
+  handleInvClick(key) {
+    this.playSound('click');
+    if (this.selectedItem === key) {
+      this.selectedItem = null;
+    } else {
+      this.selectedItem = key;
+      this.speak(items[key].name);
+    }
+    this.updateInvHighlight();
+  },
+
+  handleCraftClick(idx) {
+    if (this.gridState[idx]) {
+      this.gridState[idx] = null;
+      this.playSound('remove');
+    } else if (this.selectedItem) {
+      this.gridState[idx] = this.selectedItem;
+      this.playSound('place');
+    } else {
+      return;
+    }
+    this.refreshCraftDisplay();
+    this.refreshMaterials();
+    this.refreshResult();
+  },
+
+  updateInvHighlight() {
+    document.querySelectorAll('.inv-slot').forEach(s => {
+      s.classList.toggle('selected', s.dataset.itemId === this.selectedItem);
+    });
+  },
+
+  refreshCraftDisplay() {
+    const slots = document.querySelectorAll('.craft-slot');
+    const recipe = this.currentRecipe;
+    slots.forEach((slot, i) => {
+      slot.querySelectorAll('img').forEach(img => img.remove());
+      if (this.hintActive && recipe) {
+        const r = Math.floor(i / 3), c = i % 3;
+        const hintKey = recipe.grid[r][c];
+        if (hintKey && !this.gridState[i]) {
+          const ghost = document.createElement('img');
+          ghost.className = 'hint-ghost';
+          ghost.src = items[hintKey].img;
+          ghost.draggable = false;
+          slot.appendChild(ghost);
+        }
+      }
+      if (this.gridState[i]) {
+        const img = document.createElement('img');
+        img.className = 'placed-item';
+        img.src = items[this.gridState[i]].img;
+        img.draggable = false;
+        slot.appendChild(img);
+      }
+    });
+  },
+
+  refreshMaterials() {
+    const bar = document.getElementById('materials-bar');
+    bar.innerHTML = '';
+    if (!this.currentRecipe) return;
+    const needed = {};
+    this.currentRecipe.grid.flat().filter(Boolean).forEach(k => {
+      needed[k] = (needed[k] || 0) + 1;
+    });
+    const placed = {};
+    this.gridState.filter(Boolean).forEach(k => {
+      placed[k] = (placed[k] || 0) + 1;
+    });
+    Object.entries(needed).forEach(([key, total]) => {
+      const have = Math.min(placed[key] || 0, total);
+      const remaining = total - have;
+      const tag = document.createElement('span');
+      tag.className = 'mat-tag' + (remaining <= 0 ? ' done' : '');
+      const img = document.createElement('img');
+      img.src = items[key].img;
+      img.draggable = false;
+      tag.appendChild(img);
+      tag.appendChild(document.createTextNode(
+        items[key].name + ' ×' + remaining
+      ));
+      bar.appendChild(tag);
+    });
+  },
+
+  refreshResult() {
+    const slot = document.getElementById('result-slot');
+    slot.innerHTML = '';
+    if (this.checkMatch()) {
+      const img = document.createElement('img');
+      img.src = items[this.currentRecipe.id].img;
+      img.draggable = false;
+      slot.appendChild(img);
+    }
+  },
+
+  refreshHintInv() {
+    if (!this.currentRecipe) return;
+    const neededKeys = new Set();
+    this.currentRecipe.grid.flat().filter(Boolean).forEach(k => neededKeys.add(k));
+    document.querySelectorAll('.inv-slot').forEach(s => {
+      s.classList.toggle('hint-glow', this.hintActive && neededKeys.has(s.dataset.itemId));
+    });
+  },
+
+  checkMatch() {
+    if (!this.currentRecipe) return false;
+    for (let r = 0; r < 3; r++) {
+      for (let c = 0; c < 3; c++) {
+        if ((this.currentRecipe.grid[r][c] || null) !== (this.gridState[r * 3 + c] || null)) return false;
+      }
+    }
+    return true;
+  },
+
+  resetGrid() {
+    this.playSound('click');
+    this.gridState = Array(9).fill(null);
+    this.selectedItem = null;
+    this.hintActive = false;
+    this.clearStatus();
+    this.updateInvHighlight();
+    this.refreshCraftDisplay();
+    this.refreshMaterials();
+    this.refreshResult();
+    this.refreshHintInv();
+  },
+
+  toggleHint() {
+    this.playSound('click');
+    this.hintActive = !this.hintActive;
+    this.speak(this.hintActive ? 'ヒント！ 正しい場所を見てみよう' : 'ヒントを隠したよ');
+    this.refreshCraftDisplay();
+    this.refreshHintInv();
+  },
+
+  checkRecipe() {
+    this.playSound('click');
+    if (this.checkMatch()) {
+      this.onSuccess();
+    } else {
+      this.onFail();
+    }
+  },
+
+  nextQuestion() {
+    document.getElementById('success-modal').classList.remove('show');
+    let idx;
+    do {
+      idx = Math.floor(Math.random() * recipes.length);
+    } while (recipes.length > 1 && this.currentRecipe && recipes[idx].id === this.currentRecipe.id);
+    this.currentRecipe = recipes[idx];
+    this.questionCount++;
+    this.gridState = Array(9).fill(null);
+    this.selectedItem = null;
+    this.hintActive = false;
+    const recipe = this.currentRecipe;
+    document.getElementById('target-img').src = items[recipe.id].img;
+    document.getElementById('target-name').textContent = items[recipe.id].name;
+    document.getElementById('topbar-counter').textContent = this.correctCount + '/' + (this.questionCount - 1) + ' 正解';
+    this.clearStatus();
+    this.updateInvHighlight();
+    this.refreshCraftDisplay();
+    this.refreshMaterials();
+    this.refreshResult();
+    this.refreshHintInv();
+    this.speak(items[recipe.id].name + ' を作ろう！');
+  },
+
+  onSuccess() {
+    this.playSound('success');
+    this.vibrate([100, 50, 100]);
+    this.correctCount++;
+    const recipe = this.currentRecipe;
+    document.getElementById('topbar-counter').textContent = this.correctCount + '/' + this.questionCount + ' 正解';
+    this.refreshResult();
+    const modal = document.getElementById('success-modal');
+    document.getElementById('success-item-img').src = items[recipe.id].img;
+    document.getElementById('success-sub').textContent = items[recipe.id].name + ' ができました！';
+    modal.classList.add('show');
+    this.spawnParticles();
+    this.speak(items[recipe.id].name + ' ができた！ すごい！ やったね！');
+    const msg = document.getElementById('status-msg');
+    msg.textContent = '🎉 せいこう！';
+    msg.className = 'success';
+  },
+
+  onFail() {
+    this.playSound('fail');
+    this.vibrate(200);
+    const frame = document.getElementById('crafting-frame');
+    frame.classList.remove('shake-anim');
+    void frame.offsetWidth;
+    frame.classList.add('shake-anim');
+    const msg = document.getElementById('status-msg');
+    msg.textContent = '❌ もう一度 調べてみよう！';
+    msg.className = 'fail';
+    this.speak('もう一度 調べてみよう');
+  },
+
+  clearStatus() {
+    const msg = document.getElementById('status-msg');
+    msg.textContent = '';
+    msg.className = '';
+  },
+
+  spawnParticles() {
+    const container = document.getElementById('particles-container');
+    container.innerHTML = '';
+    const cx = window.innerWidth / 2;
+    const cy = window.innerHeight / 2;
+    const colors = ['#FFD700','#FFA500','#FFEC00','#FF6B6B','#7FFF00','#00BFFF','#FF69B4','#fff'];
+    for (let i = 0; i < 40; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const angle = Math.random() * Math.PI * 2;
+      const dist = 80 + Math.random() * 200;
+      const dx = Math.cos(angle) * dist;
+      const dy = Math.sin(angle) * dist - 60;
+      p.style.left = cx + 'px';
+      p.style.top = cy + 'px';
+      p.style.background = colors[Math.floor(Math.random() * colors.length)];
+      const size = 6 + Math.random() * 10;
+      p.style.width = size + 'px';
+      p.style.height = size + 'px';
+      p.style.setProperty('--dx', dx + 'px');
+      p.style.setProperty('--dy', dy + 'px');
+      p.style.animationDelay = (Math.random() * 0.3) + 's';
+      container.appendChild(p);
+    }
+    setTimeout(() => { container.innerHTML = ''; }, 1800);
+  },
+};
+
+window.addEventListener('DOMContentLoaded', () => game.init());
+</script>
+</body>
+</html>
