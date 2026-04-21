@@ -3,11 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<!-- iOS Webアプリ対応 (iPadOS 26以降の「Webアプリとして開く」でフルスクリーン動作) -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
 <title>マイクラ クラフトクイズ</title>
 <style>
+/* =====================================================
+   CSS変数 — window.innerHeightをJSで --avh に設定して使う
+   これによりiOS Safariのアドレスバー分の誤差を解消
+   ===================================================== */
 :root {
+  --avh: 100px; /* JSで上書きされる */
   --mc-bg: #c6c6c6;
-  --mc-darker: #373737;
+  --mc-dark: #373737;
   --mc-slot: #8b8b8b;
   --mc-tl: #373737;
   --mc-br: #ffffff;
@@ -17,294 +26,497 @@
   --mc-green: #5a9e4a;
   --mc-gl: #7acc5a;
   --mc-gd: #3d7a2a;
-  --mc-sel-bg: #6e9fd8;
+  --mc-sel: #6e9fd8;
   --mc-sel-tl: #4a78b0;
   --mc-sel-br: #a8d4ff;
+  /* 固定バーの高さ定数 */
+  --topbar-h: 32px;
+  --bottom-h: 60px;
 }
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
-html,body{width:100%;height:100%;overflow:hidden;background:#2a2a2a;font-family:"Courier New","Monaco","Hiragino Kaku Gothic ProN","Meiryo",monospace;color:var(--mc-text)}
 
-#app{width:100vw;height:100vh;display:flex;flex-direction:column;background:var(--mc-bg);overflow:hidden;position:relative}
+*,*::before,*::after {
+  box-sizing: border-box; margin: 0; padding: 0;
+  user-select: none; -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
 
-/* TOP BAR */
-#topbar{height:30px;min-height:30px;background:#484848;border-bottom:3px solid var(--mc-darker);display:flex;align-items:center;justify-content:center;gap:12px;padding:0 10px;flex-shrink:0}
-#topbar-title{color:#fff;font-size:12px;font-weight:bold;text-shadow:2px 2px 0 #000;letter-spacing:1px}
-#topbar-counter{color:#aaa;font-size:10px;text-shadow:1px 1px 0 #000}
+html {
+  /* iOS Safariの100vh問題を回避: html自体は固定しない */
+  height: 100%;
+}
 
-/* MAIN: left + right */
-#main{flex:1;display:flex;min-height:0;overflow:hidden}
+body {
+  width: 100%;
+  /* window.innerHeightをCSSカスタムプロパティで使う */
+  height: calc(var(--avh) * 1px);
+  overflow: hidden;
+  background: #1a1a1a;
+  font-family: "Courier New","Monaco","Hiragino Kaku Gothic ProN","Meiryo",monospace;
+  color: var(--mc-text);
+}
 
-/* ===== LEFT AREA ===== */
-#left-area{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+#app {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--mc-bg);
+  overflow: hidden;
+  position: relative;
+}
 
-/* Target strip — larger image */
-#target-strip{
-  display:flex;align-items:center;gap:10px;
-  padding:8px 14px;
-  border-bottom:3px solid var(--mc-darker);
-  background:#b8b8b8;
+/* =====================================================
+   共通パーツ
+   ===================================================== */
+/* MCスタイルボーダー（左上が明るく、右下が暗い = 出っ張り感） */
+.mc-raised {
+  border: 3px solid;
+  border-color: var(--mc-ptl) var(--mc-pbr) var(--mc-pbr) var(--mc-ptl);
+}
+/* MCスタイルボーダー（スロット内側 = 凹み感） */
+.mc-inset {
+  border: 3px solid;
+  border-color: var(--mc-tl) var(--mc-br) var(--mc-br) var(--mc-tl);
+}
+
+/* =====================================================
+   TOP BAR
+   ===================================================== */
+#topbar {
+  height: var(--topbar-h);
+  min-height: var(--topbar-h);
+  flex-shrink: 0;
+  background: #484848;
+  border-bottom: 3px solid var(--mc-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 12px;
+}
+#topbar-title { color:#fff; font-size:13px; font-weight:bold; text-shadow:2px 2px 0 #000; letter-spacing:1px; }
+#topbar-counter { color:#aaa; font-size:10px; text-shadow:1px 1px 0 #000; }
+
+/* =====================================================
+   MAIN AREA (flex:1, contains everything except bars)
+   ===================================================== */
+#main {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* =====================================================
+   BOTTOM BAR — 3 colored buttons
+   ===================================================== */
+#bottom-bar {
+  height: var(--bottom-h);
+  min-height: var(--bottom-h);
+  flex-shrink: 0;
+  border-top: 3px solid var(--mc-dark);
+  background: #707070;
+  display: flex;
+  align-items: stretch;
+  padding: 6px 8px;
+  gap: 8px;
+}
+.mc-btn {
+  font-family: inherit;
+  font-weight: bold;
+  color: #fff;
+  background: #6e6e6e;
+  border: 3px solid;
+  border-color: #aaa var(--mc-dark) var(--mc-dark) #aaa;
+  cursor: pointer;
+  text-shadow: 2px 2px 0 #000;
+  white-space: nowrap;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  line-height: 1;
+  transition: filter .05s;
+  -webkit-appearance: none;
+}
+.mc-btn:active { border-color: var(--mc-dark) #aaa #aaa var(--mc-dark); filter: brightness(.88); }
+.mc-btn.sub {
+  flex: 1; padding: 0;
+  font-size: clamp(13px, 1.8vw, 20px);
+  min-height: 0;
+}
+.mc-btn.reset-btn { background:#3a7fc1; border-color:#6db0f0 #1a4f8a #1a4f8a #6db0f0; }
+.mc-btn.reset-btn:active { border-color:#1a4f8a #6db0f0 #6db0f0 #1a4f8a; }
+.mc-btn.hint-btn  { background:#c87820; border-color:#f0aa50 #8a4a08 #8a4a08 #f0aa50; }
+.mc-btn.hint-btn:active  { border-color:#8a4a08 #f0aa50 #f0aa50 #8a4a08; }
+.mc-btn.next-btn  { background:#7a3ab8; border-color:#aa70e8 #4a1878 #4a1878 #aa70e8; }
+.mc-btn.next-btn:active  { border-color:#4a1878 #aa70e8 #aa70e8 #4a1878; }
+.mc-btn.green { background:var(--mc-green); border-color:var(--mc-gl) var(--mc-gd) var(--mc-gd) var(--mc-gl); }
+.mc-btn.green:active { border-color:var(--mc-gd) var(--mc-gl) var(--mc-gl) var(--mc-gd); }
+
+/* =====================================================
+   作る！ボタン
+   ===================================================== */
+.mc-btn.craft-main {
+  background: var(--mc-green);
+  border-color: var(--mc-gl) var(--mc-gd) var(--mc-gd) var(--mc-gl);
+  border-width: 4px;
+  font-size: clamp(18px, 3vw, 28px);
+  letter-spacing: 2px;
+  padding: 0;
+  width: 82%;
+  max-width: 520px;
+  box-shadow: 0 4px 14px rgba(0,0,0,.4);
+}
+.mc-btn.craft-main:active { border-color:var(--mc-gd) var(--mc-gl) var(--mc-gl) var(--mc-gd); }
+
+/* =====================================================
+   CRAFT slots & INV slots — 共通スタイル
+   ===================================================== */
+.craft-slot {
+  background: var(--mc-slot);
+  border: 3px solid;
+  border-color: var(--mc-tl) var(--mc-br) var(--mc-br) var(--mc-tl);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; position: relative;
+  transition: background .08s;
+  /* サイズは各レイアウトで上書き */
+}
+.craft-slot:active { border-color: var(--mc-br) var(--mc-tl) var(--mc-tl) var(--mc-br); background:#888; }
+.craft-slot img.placed-item {
+  width:74%; height:74%;
+  object-fit:contain; image-rendering:pixelated;
+  position:relative; z-index:3;
+  filter: drop-shadow(1px 1px 2px rgba(0,0,0,.4));
+}
+.craft-slot img.hint-ghost {
+  position:absolute; width:66%; height:66%;
+  object-fit:contain; image-rendering:pixelated;
+  opacity:.3; z-index:1; pointer-events:none; filter:brightness(1.3);
+}
+
+.inv-slot {
+  background: var(--mc-slot);
+  border: 3px solid;
+  border-color: var(--mc-tl) var(--mc-br) var(--mc-br) var(--mc-tl);
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column;
+  cursor: pointer; position: relative;
+  transition: background .1s;
+  overflow: hidden;
+  min-height: 0; min-width: 0;
+  gap: 2px; padding: 4px 3px 5px;
+}
+.inv-slot:active { border-color: var(--mc-br) var(--mc-tl) var(--mc-tl) var(--mc-br); background:#888; }
+.inv-slot img {
+  width:54%; height:auto; max-height:54%;
+  object-fit:contain; image-rendering:pixelated; flex-shrink:0;
+  filter: drop-shadow(1px 1px 1px rgba(0,0,0,.35));
+}
+.inv-slot .inv-name {
+  font-size: clamp(8px, 1.1vw, 13px);
+  font-weight: bold; color:#fff; text-shadow:1px 1px 0 #000;
+  text-align:center; line-height:1.2;
+  word-break:keep-all; overflow:hidden; width:100%; padding:0 2px;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
   flex-shrink:0;
 }
-#target-slot{
-  width:140px;height:140px;
-  background:var(--mc-slot);
-  border:3px solid;
-  border-color:var(--mc-tl) var(--mc-br) var(--mc-br) var(--mc-tl);
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+.inv-slot.selected { background:var(--mc-sel); border-color:var(--mc-sel-tl) var(--mc-sel-br) var(--mc-sel-br) var(--mc-sel-tl); }
+.inv-slot.hint-glow { animation: invGlow .6s ease-in-out infinite alternate; }
+@keyframes invGlow {
+  from { background:var(--mc-slot); box-shadow:none; }
+  to   { background:#f0d050; box-shadow:inset 0 0 12px rgba(255,215,0,.7); }
 }
-#target-slot img{width:82%;height:82%;object-fit:contain;image-rendering:pixelated}
-#target-info{display:flex;flex-direction:column;gap:4px}
-#target-label{font-size:clamp(11px,1.4vw,15px);color:var(--mc-text);text-shadow:1px 1px 0 #fff;font-weight:bold}
-#target-name{font-size:clamp(16px,2.2vw,24px);font-weight:bold;color:#222;text-shadow:1px 1px 0 #fff}
 
-/* Materials bar above grid */
-#materials-bar{
-  display:flex;align-items:center;flex-wrap:wrap;gap:6px;
-  padding:7px 14px;
-  border-bottom:3px solid var(--mc-darker);
-  background:#adadad;
-  flex-shrink:0;min-height:46px;
+/* 素材タグ */
+.mat-tag {
+  display:inline-flex; align-items:center; gap:5px;
+  padding: 4px 8px;
+  background: var(--mc-bg);
+  border:2px solid; border-color:var(--mc-ptl) var(--mc-pbr) var(--mc-pbr) var(--mc-ptl);
+  white-space:nowrap; font-weight:bold; transition:all .3s;
 }
-#mat-label{font-size:clamp(11px,1.3vw,14px);font-weight:bold;color:var(--mc-text);text-shadow:1px 1px 0 #fff;margin-right:2px;white-space:nowrap}
-.mat-tag{
-  display:inline-flex;align-items:center;gap:5px;
-  padding:5px 9px;
+.mat-tag img { image-rendering:pixelated; object-fit:contain; }
+.mat-tag.done { color:var(--mc-gd); background:#b6e8a0; border-color:#7acc5a #3d7a2a #3d7a2a #7acc5a; }
+
+/* 矢印ボックス */
+#arrow-icon {
+  width:34px; height:34px;
   background:var(--mc-bg);
-  border:2px solid;border-color:var(--mc-ptl) var(--mc-pbr) var(--mc-pbr) var(--mc-ptl);
-  white-space:nowrap;
-  font-size:clamp(13px,1.8vw,19px);font-weight:bold;
-  transition:all .3s;
-}
-.mat-tag img{width:24px;height:24px;image-rendering:pixelated;object-fit:contain}
-.mat-tag.done{color:var(--mc-gd);background:#b6e8a0;border-color:#7acc5a #3d7a2a #3d7a2a #7acc5a}
-
-/* Craft center */
-#craft-center{
-  flex:1;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  gap:6px;padding:8px;min-height:0;
-}
-#craft-row{display:flex;align-items:center;gap:12px}
-#craft-grid{
-  display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);
-  gap:3px;background:var(--mc-slot);padding:3px;
-  border:3px solid var(--mc-darker);
+  border:2px solid; border-color:var(--mc-ptl) var(--mc-pbr) var(--mc-pbr) var(--mc-ptl);
+  display:flex; align-items:center; justify-content:center;
+  font-size:18px; color:var(--mc-text); flex-shrink:0;
 }
 
-/* Large craft slots */
-.craft-slot{
-  width:clamp(110px,17vw,165px);
-  height:clamp(110px,17vw,165px);
+/* ステータスメッセージ */
+#status-msg { font-weight:bold; color:transparent; text-align:center; transition:color .3s; flex-shrink:0; }
+#status-msg.fail    { color:#ff4444; text-shadow:1px 1px 0 #800; }
+#status-msg.success { color:var(--mc-green); text-shadow:1px 1px 0 #2a5a1a; }
+
+/* 結果スロット */
+#result-slot {
   background:var(--mc-slot);
-  border:3px solid;border-color:var(--mc-tl) var(--mc-br) var(--mc-br) var(--mc-tl);
-  display:flex;align-items:center;justify-content:center;
-  cursor:pointer;position:relative;transition:background .08s;
+  border:3px solid; border-color:var(--mc-tl) var(--mc-br) var(--mc-br) var(--mc-tl);
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
 }
-.craft-slot:hover{background:#9a9a9a}
-.craft-slot:active{border-color:var(--mc-br) var(--mc-tl) var(--mc-tl) var(--mc-br);background:#888}
-.craft-slot img.placed-item{
-  width:75%;height:75%;object-fit:contain;image-rendering:pixelated;
-  position:relative;z-index:3;
-  filter:drop-shadow(1px 1px 2px rgba(0,0,0,0.4));
-}
-.craft-slot img.hint-ghost{
-  position:absolute;width:68%;height:68%;
-  object-fit:contain;image-rendering:pixelated;
-  opacity:.3;z-index:1;pointer-events:none;filter:brightness(1.3);
-}
+#result-slot img { width:74%; height:74%; object-fit:contain; image-rendering:pixelated; filter:drop-shadow(1px 1px 2px rgba(0,0,0,.4)); }
 
-#arrow-area{display:flex;flex-direction:column;align-items:center;gap:8px}
-#arrow-icon{
-  width:38px;height:38px;
-  background:var(--mc-bg);
-  border:2px solid;border-color:var(--mc-ptl) var(--mc-pbr) var(--mc-pbr) var(--mc-ptl);
-  display:flex;align-items:center;justify-content:center;
-  font-size:20px;color:var(--mc-text);
-}
-#result-slot{
-  width:clamp(110px,17vw,165px);
-  height:clamp(110px,17vw,165px);
+/* ターゲットスロット */
+#target-slot {
   background:var(--mc-slot);
-  border:3px solid;border-color:var(--mc-tl) var(--mc-br) var(--mc-br) var(--mc-tl);
-  display:flex;align-items:center;justify-content:center;
+  border:3px solid; border-color:var(--mc-tl) var(--mc-br) var(--mc-br) var(--mc-tl);
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
 }
-#result-slot img{width:76%;height:76%;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(1px 1px 2px rgba(0,0,0,0.4))}
+#target-slot img { width:82%; height:82%; object-fit:contain; image-rendering:pixelated; }
 
-#status-msg{font-size:clamp(11px,1.4vw,15px);font-weight:bold;color:transparent;min-height:20px;text-align:center;transition:color .3s}
-#status-msg.fail{color:#ff4444;text-shadow:1px 1px 0 #800}
-#status-msg.success{color:var(--mc-green);text-shadow:1px 1px 0 #2a5a1a}
+/* =====================================================
+   SUCCESS MODAL
+   ===================================================== */
+#success-modal {
+  position: fixed;
+  top:0; left:0; right:0; bottom:0; /* inset:0 の代替 — iOS 14以下互換 */
+  background: rgba(0,0,0,.88);
+  display: none;
+  flex-direction: column; align-items: center; justify-content: center;
+  z-index: 300;
+}
+#success-modal.show { display:flex; }
+#success-item-img {
+  width:160px; height:160px; object-fit:contain; image-rendering:pixelated;
+  animation: successSpin .6s cubic-bezier(.175,.885,.32,1.275) forwards;
+  filter: drop-shadow(0 0 28px rgba(255,215,0,.7));
+}
+#success-text { color:#FFD700; font-size:clamp(22px,5vw,40px); font-weight:bold; margin-top:14px; text-shadow:3px 3px 0 #000; animation:pulse 1s ease-in-out infinite; }
+#success-sub  { color:#fff; font-size:clamp(12px,2vw,18px); margin-top:8px; text-shadow:2px 2px 0 #000; }
+#success-modal .mc-btn { margin-top:20px; font-size:16px; padding:12px 24px; }
 
-/* 作る！ button row — large, fills width below craft grid */
-#craft-btn-row{
-  padding:10px 16px;
-  display:flex;align-items:center;justify-content:center;
-  border-top:3px solid var(--mc-darker);
-  background:#9a9a9a;
-  flex-shrink:0;min-height:70px;
+/* アニメーション */
+@keyframes successSpin { 0%{transform:scale(0) rotate(-180deg);opacity:0} 100%{transform:scale(1) rotate(0deg);opacity:1} }
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+@keyframes shake { 0%,100%{transform:none} 10%,50%,90%{transform:translateX(-6px)} 30%,70%{transform:translateX(6px)} }
+.shake-anim { animation:shake .4s cubic-bezier(.36,.07,.19,.97); }
+
+#particles-container { position:fixed; top:0;left:0;right:0;bottom:0; pointer-events:none; z-index:310; }
+.particle { position:absolute; animation:particleFly 1.3s ease-out forwards; }
+@keyframes particleFly { 0%{opacity:1;transform:translate(0,0) scale(1) rotate(0deg)} 100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.2) rotate(360deg)} }
+
+/* =====================================================
+   LANDSCAPE レイアウト（横画面）
+   左エリア（ターゲット＋素材＋作業台＋作る！）＋右エリア（インベントリ）
+   ===================================================== */
+@media (orientation: landscape) {
+
+  #main { flex-direction: row; }
+
+  /* ---- 左エリア ---- */
+  #left-area {
+    flex: 1;
+    display: flex; flex-direction: column;
+    overflow: hidden; min-width: 0;
+  }
+
+  /* ターゲット帯 */
+  #target-strip {
+    display: flex; align-items: center; gap: 10px;
+    padding: 6px 12px;
+    border-bottom: 3px solid var(--mc-dark);
+    background: #b8b8b8;
+    flex-shrink: 0;
+  }
+  #target-slot { width: 100px; height: 100px; }
+  #target-info { display:flex; flex-direction:column; gap:3px; }
+  #target-label { font-size: clamp(10px,1.3vw,14px); font-weight:bold; color:var(--mc-text); text-shadow:1px 1px 0 #fff; }
+  #target-name  { font-size: clamp(15px,2vw,22px); font-weight:bold; color:#222; text-shadow:1px 1px 0 #fff; }
+
+  /* 素材バー */
+  #materials-bar {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 5px;
+    padding: 5px 12px;
+    border-bottom: 3px solid var(--mc-dark);
+    background: #adadad;
+    flex-shrink: 0; min-height: 40px;
+  }
+  #mat-label { font-size: clamp(10px,1.2vw,13px); font-weight:bold; color:var(--mc-text); text-shadow:1px 1px 0 #fff; margin-right:2px; white-space:nowrap; }
+  .mat-tag { font-size: clamp(11px,1.5vw,16px); }
+  .mat-tag img { width:20px; height:20px; }
+
+  /* 作業台エリア */
+  #craft-center {
+    flex: 1;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 5px; padding: 6px;
+    min-height: 0;
+  }
+  #craft-row { display:flex; align-items:center; gap:10px; }
+  #craft-grid {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    grid-template-rows: repeat(3,1fr);
+    gap: 3px; background: var(--mc-slot);
+    padding: 3px; border: 3px solid var(--mc-dark);
+  }
+
+  /*
+    craft-slotのサイズをJSで計算した --slot-size で決める
+    フォールバックとして clamp も指定
+  */
+  .craft-slot {
+    width:  var(--slot-size, clamp(72px, 12vw, 120px));
+    height: var(--slot-size, clamp(72px, 12vw, 120px));
+  }
+  #result-slot {
+    width:  var(--slot-size, clamp(72px, 12vw, 120px));
+    height: var(--slot-size, clamp(72px, 12vw, 120px));
+  }
+  #arrow-area { display:flex; flex-direction:column; align-items:center; gap:6px; }
+
+  #status-msg { font-size: clamp(10px,1.3vw,14px); min-height:18px; }
+
+  /* 作る！ボタン行 */
+  #craft-btn-row {
+    display: flex; align-items: center; justify-content: center;
+    padding: 7px 14px;
+    border-top: 3px solid var(--mc-dark);
+    background: #9a9a9a;
+    flex-shrink: 0;
+    min-height: 58px;
+  }
+
+  /* ---- 右エリア（インベントリ） ---- */
+  #right-panel {
+    width: clamp(230px, 28%, 320px);
+    border-left: 3px solid var(--mc-dark);
+    display: flex; flex-direction: column;
+    background: var(--mc-bg); overflow: hidden; flex-shrink: 0;
+  }
+  #inv-header {
+    background: #484848; border-bottom: 2px solid var(--mc-dark);
+    padding: 5px; text-align: center; flex-shrink: 0;
+  }
+  #inv-header-text { color:#fff; font-size:clamp(11px,1.3vw,14px); font-weight:bold; text-shadow:2px 2px 0 #000; letter-spacing:1px; }
+  #inv-grid {
+    flex:1; display:grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(6, 1fr);
+    gap: 4px; padding: 5px;
+    overflow: hidden;
+  }
+  .inv-slot .inv-name { font-size: clamp(8px, 1vw, 12px); }
+
+  /* 縦画面用要素を隠す */
+  #portrait-only { display: none !important; }
 }
 
-/* ===== RIGHT PANEL: Inventory ===== */
-#right-panel{
-  width:clamp(260px,30%,340px);
-  border-left:3px solid var(--mc-darker);
-  display:flex;flex-direction:column;
-  background:var(--mc-bg);overflow:hidden;
-  flex-shrink:0;
-}
-#inv-header{
-  background:#484848;border-bottom:2px solid var(--mc-darker);
-  padding:6px;text-align:center;flex-shrink:0;
-}
-#inv-header-text{color:#fff;font-size:clamp(11px,1.4vw,15px);font-weight:bold;text-shadow:2px 2px 0 #000;letter-spacing:1px}
+/* =====================================================
+   PORTRAIT レイアウト（縦画面）
+   上段：ターゲット＋作業台
+   下段：インベントリ（横並び）＋作る！ボタン
+   ===================================================== */
+@media (orientation: portrait) {
 
-/* Large inventory slots — 2 columns × 6 rows, no scroll */
-#inv-grid{
-  flex:1;display:grid;
-  grid-template-columns:repeat(2,1fr);
-  grid-template-rows:repeat(6,1fr);
-  gap:5px;padding:6px;
-  overflow:hidden;
-}
-.inv-slot{
-  background:var(--mc-slot);
-  border:3px solid;border-color:var(--mc-tl) var(--mc-br) var(--mc-br) var(--mc-tl);
-  display:flex;align-items:center;justify-content:center;
-  flex-direction:column;
-  cursor:pointer;position:relative;
-  transition:background .1s;
-  gap:2px;
-  padding:4px 3px 5px;
-  overflow:hidden;
-  min-height:0;
-}
-.inv-slot:hover{background:#9a9a9a}
-.inv-slot:active{border-color:var(--mc-br) var(--mc-tl) var(--mc-tl) var(--mc-br);background:#888}
-.inv-slot img{
-  width:52%;height:auto;max-height:52%;
-  object-fit:contain;image-rendering:pixelated;flex-shrink:0;
-  filter:drop-shadow(1px 1px 2px rgba(0,0,0,0.4));
-}
-.inv-slot .inv-name{
-  font-size:clamp(9px,1.05vw,13px);font-weight:bold;
-  color:#fff;text-shadow:1px 1px 0 #000;
-  text-align:center;line-height:1.2;
-  word-break:keep-all;
-  overflow:hidden;width:100%;
-  padding:0 3px;
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
-  flex-shrink:0;
-}
-.inv-slot.selected{
-  background:var(--mc-sel-bg);
-  border-color:var(--mc-sel-tl) var(--mc-sel-br) var(--mc-sel-br) var(--mc-sel-tl);
-}
-.inv-slot.hint-glow{animation:invGlow .6s ease-in-out infinite alternate}
-@keyframes invGlow{
-  from{background:var(--mc-slot);box-shadow:none}
-  to{background:#f0d050;box-shadow:inset 0 0 14px rgba(255,215,0,.7)}
-}
+  :root {
+    --bottom-h: 54px;
+  }
 
-/* Buttons */
-.mc-btn{
-  font-family:inherit;font-size:clamp(10px,1.3vw,14px);
-  font-weight:bold;color:#fff;background:#6e6e6e;
-  border:3px solid;border-color:#aaa var(--mc-darker) var(--mc-darker) #aaa;
-  padding:9px 16px;cursor:pointer;
-  text-shadow:2px 2px 0 #000;white-space:nowrap;
-  display:flex;align-items:center;gap:5px;line-height:1;
-  transition:filter .05s;
-}
-.mc-btn:hover{filter:brightness(1.15)}
-.mc-btn:active{border-color:var(--mc-darker) #aaa #aaa var(--mc-darker);filter:brightness(.9)}
+  #main { flex-direction: column; }
 
-/* 作る！ — big green hero button, fills the row */
-.mc-btn.craft-main{
-  background:var(--mc-green);
-  border-color:var(--mc-gl) var(--mc-gd) var(--mc-gd) var(--mc-gl);
-  font-size:clamp(22px,3vw,32px);
-  padding:14px 0;
-  width:80%;max-width:560px;
-  min-height:54px;
-  justify-content:center;
-  border-width:4px;letter-spacing:2px;
-  box-shadow:0 5px 16px rgba(0,0,0,.45);
-}
-.mc-btn.craft-main:active{border-color:var(--mc-gd) var(--mc-gl) var(--mc-gl) var(--mc-gd)}
-.mc-btn.green{background:var(--mc-green);border-color:var(--mc-gl) var(--mc-gd) var(--mc-gd) var(--mc-gl)}
-.mc-btn.green:active{border-color:var(--mc-gd) var(--mc-gl) var(--mc-gl) var(--mc-gd)}
+  /* ---- 上段：ターゲット＋素材＋作業台 ---- */
+  #left-area {
+    flex: 1;
+    display: flex; flex-direction: column;
+    overflow: hidden; min-width: 0; min-height: 0;
+  }
 
-/* Bottom bar — 3 large colored buttons */
-#bottom-bar{
-  height:62px;min-height:62px;
-  border-top:3px solid var(--mc-darker);
-  background:#707070;
-  display:flex;align-items:stretch;
-  padding:6px 8px;
-  gap:8px;
-  flex-shrink:0;
-}
-/* Shared base for the 3 sub-buttons */
-.mc-btn.sub{
-  flex:1;
-  justify-content:center;
-  font-size:clamp(13px,1.8vw,20px);
-  padding:0;
-  min-height:0;
-}
-/* リセット — blue */
-.mc-btn.sub.reset-btn{
-  background:#3a7fc1;
-  border-color:#6db0f0 #1a4f8a #1a4f8a #6db0f0;
-}
-.mc-btn.sub.reset-btn:active{border-color:#1a4f8a #6db0f0 #6db0f0 #1a4f8a}
-/* ヒント — orange */
-.mc-btn.sub.hint-btn{
-  background:#c87820;
-  border-color:#f0aa50 #8a4a08 #8a4a08 #f0aa50;
-}
-.mc-btn.sub.hint-btn:active{border-color:#8a4a08 #f0aa50 #f0aa50 #8a4a08}
-/* 次へ — purple */
-.mc-btn.sub.next-btn{
-  background:#7a3ab8;
-  border-color:#aa70e8 #4a1878 #4a1878 #aa70e8;
-}
-.mc-btn.sub.next-btn:active{border-color:#4a1878 #aa70e8 #aa70e8 #4a1878}
+  /* ターゲット帯 */
+  #target-strip {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 10px;
+    border-bottom: 3px solid var(--mc-dark);
+    background: #b8b8b8;
+    flex-shrink: 0;
+  }
+  #target-slot { width: 72px; height: 72px; }
+  #target-info { display:flex; flex-direction:column; gap:2px; }
+  #target-label { font-size: 11px; font-weight:bold; color:var(--mc-text); text-shadow:1px 1px 0 #fff; }
+  #target-name  { font-size: clamp(14px,3.5vw,20px); font-weight:bold; color:#222; text-shadow:1px 1px 0 #fff; }
 
-.mc-btn.green{background:var(--mc-green);border-color:var(--mc-gl) var(--mc-gd) var(--mc-gd) var(--mc-gl)}
-.mc-btn.green:active{border-color:var(--mc-gd) var(--mc-gl) var(--mc-gl) var(--mc-gd)}
-#success-modal{position:fixed;inset:0;background:rgba(0,0,0,.88);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:300}
-#success-modal.show{display:flex}
-#success-item-img{width:180px;height:180px;object-fit:contain;image-rendering:pixelated;animation:successSpin .6s cubic-bezier(.175,.885,.32,1.275) forwards;filter:drop-shadow(0 0 30px rgba(255,215,0,.7))}
-#success-text{color:#FFD700;font-size:clamp(24px,5vw,44px);font-weight:bold;margin-top:16px;text-shadow:3px 3px 0 #000;animation:pulse 1s ease-in-out infinite}
-#success-sub{color:#fff;font-size:clamp(13px,2vw,20px);margin-top:10px;text-shadow:2px 2px 0 #000}
-#success-modal .mc-btn{margin-top:24px;font-size:17px;padding:12px 28px}
-@keyframes successSpin{0%{transform:scale(0) rotate(-180deg);opacity:0}100%{transform:scale(1) rotate(0deg);opacity:1}}
-@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
-@keyframes shake{0%,100%{transform:none}10%,50%,90%{transform:translateX(-7px)}30%,70%{transform:translateX(7px)}}
-.shake-anim{animation:shake .4s cubic-bezier(.36,.07,.19,.97)}
+  /* 素材バー */
+  #materials-bar {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 4px;
+    padding: 4px 10px;
+    border-bottom: 3px solid var(--mc-dark);
+    background: #adadad;
+    flex-shrink: 0; min-height: 36px;
+  }
+  #mat-label { font-size: 10px; font-weight:bold; color:var(--mc-text); text-shadow:1px 1px 0 #fff; margin-right:2px; white-space:nowrap; }
+  .mat-tag { font-size: clamp(10px,2.5vw,14px); }
+  .mat-tag img { width:16px; height:16px; }
 
-#particles-container{position:fixed;inset:0;pointer-events:none;z-index:310}
-.particle{position:absolute;animation:particleFly 1.3s ease-out forwards}
-@keyframes particleFly{0%{opacity:1;transform:translate(0,0) scale(1) rotate(0deg)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.2) rotate(360deg)}}
+  /* 作業台エリア */
+  #craft-center {
+    flex: 1;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 4px; padding: 4px;
+    min-height: 0;
+  }
+  #craft-row { display:flex; align-items:center; gap:8px; }
+  #craft-grid {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    grid-template-rows: repeat(3,1fr);
+    gap: 3px; background: var(--mc-slot);
+    padding: 3px; border: 3px solid var(--mc-dark);
+  }
+  .craft-slot {
+    width:  var(--slot-size-p, clamp(58px, 15vw, 90px));
+    height: var(--slot-size-p, clamp(58px, 15vw, 90px));
+  }
+  #result-slot {
+    width:  var(--slot-size-p, clamp(58px, 15vw, 90px));
+    height: var(--slot-size-p, clamp(58px, 15vw, 90px));
+  }
+  #arrow-area { display:flex; flex-direction:column; align-items:center; gap:4px; }
+  #arrow-icon { width:28px; height:28px; font-size:15px; }
 
-@media (max-height:520px){
-  #topbar{height:24px;min-height:24px}
-  #target-strip{padding:4px 10px}
-  #target-slot{width:90px;height:90px}
-  #target-name{font-size:14px}
-  #materials-bar{padding:4px 10px;min-height:36px}
-  .mat-tag{font-size:12px;padding:3px 6px}
-  #craft-btn-row{min-height:50px;padding:6px 10px}
-  .mc-btn.craft-main{font-size:16px;min-height:38px}
-  #bottom-bar{height:46px;min-height:46px;padding:4px 6px}
-  .mc-btn.sub{font-size:12px}
-  .craft-slot{width:clamp(72px,11vw,110px);height:clamp(72px,11vw,110px)}
-  #result-slot{width:clamp(72px,11vw,110px);height:clamp(72px,11vw,110px)}
-}
-@media (max-width:680px){
-  #right-panel{width:44%;min-width:200px}
-  .craft-slot{width:clamp(78px,12vw,118px);height:clamp(78px,12vw,118px)}
-  #result-slot{width:clamp(78px,12vw,118px);height:clamp(78px,12vw,118px)}
+  #status-msg { font-size: 11px; min-height:16px; }
+
+  /* 作る！ボタン行 */
+  #craft-btn-row {
+    display: flex; align-items: center; justify-content: center;
+    padding: 5px 10px;
+    border-top: 3px solid var(--mc-dark);
+    background: #9a9a9a;
+    flex-shrink: 0;
+    min-height: 50px;
+  }
+  .mc-btn.craft-main { font-size: clamp(16px,4vw,22px); min-height:40px; }
+
+  /* ---- 下段：インベントリ（横画面・3列4行または4列3行） ---- */
+  #right-panel {
+    height: clamp(160px, 32%, 220px);
+    width: 100%;
+    border-left: none;
+    border-top: 3px solid var(--mc-dark);
+    display: flex; flex-direction: column;
+    background: var(--mc-bg); overflow: hidden; flex-shrink: 0;
+  }
+  #inv-header {
+    background: #484848; border-bottom: 2px solid var(--mc-dark);
+    padding: 4px; text-align: center; flex-shrink: 0;
+  }
+  #inv-header-text { color:#fff; font-size:11px; font-weight:bold; text-shadow:2px 2px 0 #000; letter-spacing:1px; }
+  /* 縦画面では横並び：4列3行（12スロット）*/
+  #inv-grid {
+    flex:1; display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 3px; padding: 4px;
+    overflow: hidden;
+  }
+  .inv-slot .inv-name { font-size: clamp(7px, 1.8vw, 10px); }
+
+  /* 横画面用要素は縦でも表示 */
+  #portrait-only { display: none !important; }
 }
 </style>
 </head>
@@ -314,8 +526,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#2a2a2a;font-family:
     <span id="topbar-title">⛏ マイクラ クラフトクイズ</span>
     <span id="topbar-counter"></span>
   </div>
+
   <div id="main">
-    <!-- LEFT -->
     <div id="left-area">
       <div id="target-strip">
         <div id="target-slot"><img id="target-img" src="" alt="" onerror="this.style.opacity='.3'"></div>
@@ -339,12 +551,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:#2a2a2a;font-family:
         <button class="mc-btn craft-main" id="btn-craft">✅ 作る！</button>
       </div>
     </div>
-    <!-- RIGHT: Inventory -->
+
     <div id="right-panel">
       <div id="inv-header"><span id="inv-header-text">インベントリ</span></div>
       <div id="inv-grid"></div>
     </div>
   </div>
+
   <div id="bottom-bar">
     <button class="mc-btn sub reset-btn" id="btn-reset">🔄 リセット</button>
     <button class="mc-btn sub hint-btn"  id="btn-hint">💡 ヒント</button>
@@ -362,40 +575,92 @@ html,body{width:100%;height:100%;overflow:hidden;background:#2a2a2a;font-family:
 
 <script>
 // =====================================================
+// iOS Safari 100vh バグ修正 + craft-slot サイズ動的計算
+// =====================================================
+function setLayout() {
+  const W = window.innerWidth;
+  const H = window.innerHeight;
+  const root = document.documentElement;
+
+  // --avh: window.innerHeightの実際の値をpx単位でCSSに渡す
+  root.style.setProperty('--avh', H);
+
+  const isLandscape = W > H;
+
+  if (isLandscape) {
+    // ---- 横画面 ----
+    // 固定部の高さを引いた残りが craft-center の高さ
+    // topbar(32) + target-strip(~118) + materials-bar(~40) + craft-btn-row(~58) + bottom-bar(60) = ~308px
+    // ターゲット画像100px + padding12*2 + border3*2 = 130px (target-strip)
+    const topbarH    = 32;
+    const targetH    = 100 + 6*2 + 3*2; // padding + border
+    const materialsH = 40;
+    const craftBtnH  = 58;
+    const bottomH    = 60;
+    const craftCenterH = H - topbarH - targetH - materialsH - craftBtnH - bottomH;
+
+    // craft-center に3行 + gap(5*2=10) + padding(6*2=12) + status(18) + gap(5) が入る
+    const available = craftCenterH - 10 - 12 - 18 - 5 - 6; // gap, padding, status, gap, craft-row gap
+    const slotSize = Math.floor(Math.max(60, Math.min(available / 3, 150)));
+    root.style.setProperty('--slot-size', slotSize + 'px');
+
+  } else {
+    // ---- 縦画面 ----
+    // 利用可能な幅からスロットサイズを計算
+    // craft-grid は画面幅の左エリアに収まる必要がある
+    // 3 slots + gap(3*2=6) + padding(3*2=6) + border(3*2=6) + arrow(34+8) + result_slot
+    // result_slotと同じサイズとして、横は 4*slot + gap等
+    const invH = Math.min(220, H * 0.32);
+    const topbarH    = 32;
+    const targetH    = 72 + 5*2 + 3*2;
+    const materialsH = 36;
+    const craftBtnH  = 50;
+    const bottomH    = 54;
+    const craftCenterH = H - topbarH - targetH - materialsH - craftBtnH - bottomH - invH;
+    const available = craftCenterH - 6 - 8 - 16 - 4;
+    const slotSizeByH = Math.floor(Math.max(50, Math.min(available / 3, 100)));
+    // 幅からも計算（3スロット + 矢印エリア が横幅に収まるように）
+    const slotSizeByW = Math.floor(Math.max(50, Math.min((W * 0.6 - 50) / 3, 100)));
+    const slotSize = Math.min(slotSizeByH, slotSizeByW);
+    root.style.setProperty('--slot-size-p', slotSize + 'px');
+  }
+}
+
+// 初回 + リサイズ + 向き変更時に再計算
+window.addEventListener('resize', setLayout);
+window.addEventListener('orientationchange', () => { setTimeout(setLayout, 120); });
+// DOMContentLoaded前でも呼べるよう即実行
+setLayout();
+
+// =====================================================
 // IMAGE URLS — from Minecraft Japan Wiki
 // =====================================================
 const IMG = {
-  // 完成品（道具）
   diamond_pickaxe:    'https://static.wikitide.net/minecraftjapanwiki/5/54/Diamond_Pickaxe.png',
   iron_pickaxe:       'https://static.wikitide.net/minecraftjapanwiki/a/a2/Iron_Pickaxe.png',
   gold_pickaxe:       'https://static.wikitide.net/minecraftjapanwiki/9/95/Golden_Pickaxe.png',
   stone_pickaxe:      'https://static.wikitide.net/minecraftjapanwiki/4/40/Stone_Pickaxe.png',
   wood_pickaxe:       'https://static.wikitide.net/minecraftjapanwiki/b/b3/Wooden_Pickaxe.png',
-  // 剣
   diamond_sword:      'https://static.wikitide.net/minecraftjapanwiki/a/a0/Diamond_Sword.png',
   iron_sword:         'https://static.wikitide.net/minecraftjapanwiki/c/c7/Iron_Sword.png',
   gold_sword:         'https://static.wikitide.net/minecraftjapanwiki/a/a8/Golden_Sword.png',
   stone_sword:        'https://static.wikitide.net/minecraftjapanwiki/f/f2/Stone_Sword.png',
   wood_sword:         'https://static.wikitide.net/minecraftjapanwiki/c/cd/Wooden_Sword.png',
-  // 斧
   diamond_axe:        'https://static.wikitide.net/minecraftjapanwiki/e/e8/Diamond_Axe.png',
   iron_axe:           'https://static.wikitide.net/minecraftjapanwiki/8/81/Iron_Axe.png',
   gold_axe:           'https://static.wikitide.net/minecraftjapanwiki/9/97/Golden_Axe.png',
   stone_axe:          'https://static.wikitide.net/minecraftjapanwiki/2/2f/Stone_Axe.png',
   wood_axe:           'https://static.wikitide.net/minecraftjapanwiki/1/11/Wooden_Axe.png',
-  // スコップ
   diamond_shovel:     'https://static.wikitide.net/minecraftjapanwiki/b/bf/Diamond_Shovel.png',
   iron_shovel:        'https://static.wikitide.net/minecraftjapanwiki/7/76/Iron_Shovel.png',
   gold_shovel:        'https://static.wikitide.net/minecraftjapanwiki/c/ce/Golden_Shovel.png',
   stone_shovel:       'https://static.wikitide.net/minecraftjapanwiki/4/48/Stone_Shovel.png',
   wood_shovel:        'https://static.wikitide.net/minecraftjapanwiki/a/a4/Wooden_Shovel.png',
-  // クワ
   diamond_hoe:        'https://static.wikitide.net/minecraftjapanwiki/0/04/Diamond_Hoe.png',
   iron_hoe:           'https://static.wikitide.net/minecraftjapanwiki/4/4d/Iron_Hoe.png',
   gold_hoe:           'https://static.wikitide.net/minecraftjapanwiki/4/42/Golden_Hoe.png',
   stone_hoe:          'https://static.wikitide.net/minecraftjapanwiki/a/a3/Stone_Hoe.png',
   wood_hoe:           'https://static.wikitide.net/minecraftjapanwiki/b/b7/Wooden_Hoe.png',
-  // 防具
   diamond_helmet:     'https://static.wikitide.net/minecraftjapanwiki/4/45/Diamond_Helmet_(item).png',
   iron_helmet:        'https://static.wikitide.net/minecraftjapanwiki/a/a2/Iron_Helmet_(item).png',
   gold_helmet:        'https://static.wikitide.net/minecraftjapanwiki/2/26/Golden_Helmet_(item).png',
@@ -408,7 +673,6 @@ const IMG = {
   diamond_boots:      'https://static.wikitide.net/minecraftjapanwiki/f/fc/Diamond_Boots_(item).png',
   iron_boots:         'https://static.wikitide.net/minecraftjapanwiki/b/b1/Iron_Boots_(item).png',
   gold_boots:         'https://static.wikitide.net/minecraftjapanwiki/b/b6/Golden_Boots_(item).png',
-  // その他
   bow:                'https://static.wikitide.net/minecraftjapanwiki/6/65/Bow.png',
   arrow:              'https://static.wikitide.net/minecraftjapanwiki/4/41/Arrow.png',
   bread:              'https://static.wikitide.net/minecraftjapanwiki/e/e1/Bread.png',
@@ -416,7 +680,6 @@ const IMG = {
   bucket:             'https://static.wikitide.net/minecraftjapanwiki/5/52/Bucket.png',
   crafting_table:     'https://static.wikitide.net/minecraftjapanwiki/d/d4/Crafting_Table.png',
   furnace:            'https://static.wikitide.net/minecraftjapanwiki/0/0f/Furnace.png',
-  // 素材
   diamond:            'https://static.wikitide.net/minecraftjapanwiki/e/ea/Diamond.png',
   iron_ingot:         'https://static.wikitide.net/minecraftjapanwiki/0/0a/Iron_Ingot.png',
   gold_ingot:         'https://static.wikitide.net/minecraftjapanwiki/2/22/Gold_Ingot.png',
@@ -430,68 +693,28 @@ const IMG = {
   string:             'https://static.wikitide.net/minecraftjapanwiki/a/a0/String.png',
 };
 
-const INVENTORY_KEYS = [
-  'diamond','iron_ingot','gold_ingot','cobblestone',
-  'planks','stick','coal','wheat',
-  'feather','flint','string'
-];
+const INVENTORY_KEYS = ['diamond','iron_ingot','gold_ingot','cobblestone','planks','stick','coal','wheat','feather','flint','string'];
 
 const items = {
-  diamond_pickaxe:{name:'ダイヤモンドのツルハシ'},
-  iron_pickaxe:{name:'鉄のツルハシ'},
-  gold_pickaxe:{name:'金のツルハシ'},
-  stone_pickaxe:{name:'石のツルハシ'},
-  wood_pickaxe:{name:'木のツルハシ'},
-  diamond_sword:{name:'ダイヤモンドの剣'},
-  iron_sword:{name:'鉄の剣'},
-  gold_sword:{name:'金の剣'},
-  stone_sword:{name:'石の剣'},
-  wood_sword:{name:'木の剣'},
-  diamond_axe:{name:'ダイヤモンドの斧'},
-  iron_axe:{name:'鉄の斧'},
-  gold_axe:{name:'金の斧'},
-  stone_axe:{name:'石の斧'},
-  wood_axe:{name:'木の斧'},
-  diamond_shovel:{name:'ダイヤモンドのスコップ'},
-  iron_shovel:{name:'鉄のスコップ'},
-  gold_shovel:{name:'金のスコップ'},
-  stone_shovel:{name:'石のスコップ'},
-  wood_shovel:{name:'木のスコップ'},
-  diamond_hoe:{name:'ダイヤモンドのクワ'},
-  iron_hoe:{name:'鉄のクワ'},
-  gold_hoe:{name:'金のクワ'},
-  stone_hoe:{name:'石のクワ'},
-  wood_hoe:{name:'木のクワ'},
-  diamond_helmet:{name:'ダイヤモンドのヘルメット'},
-  iron_helmet:{name:'鉄のヘルメット'},
-  gold_helmet:{name:'金のヘルメット'},
-  diamond_chestplate:{name:'ダイヤモンドのチェストプレート'},
-  iron_chestplate:{name:'鉄のチェストプレート'},
-  gold_chestplate:{name:'金のチェストプレート'},
-  diamond_leggings:{name:'ダイヤモンドのレギンス'},
-  iron_leggings:{name:'鉄のレギンス'},
-  gold_leggings:{name:'金のレギンス'},
-  diamond_boots:{name:'ダイヤモンドのブーツ'},
-  iron_boots:{name:'鉄のブーツ'},
-  gold_boots:{name:'金のブーツ'},
-  bow:{name:'弓'},
-  arrow:{name:'矢'},
-  bread:{name:'パン'},
-  torch:{name:'松明'},
-  bucket:{name:'バケツ'},
-  crafting_table:{name:'作業台'},
-  furnace:{name:'かまど'},
-  diamond:{name:'ダイヤモンド'},
-  iron_ingot:{name:'鉄インゴット'},
-  gold_ingot:{name:'金インゴット'},
-  cobblestone:{name:'丸石'},
-  stick:{name:'木の棒'},
-  planks:{name:'板材'},
-  coal:{name:'石炭'},
-  wheat:{name:'小麦'},
-  feather:{name:'羽根'},
-  flint:{name:'火打石'},
-  string:{name:'糸'},
+  diamond_pickaxe:{name:'ダイヤモンドのツルハシ'}, iron_pickaxe:{name:'鉄のツルハシ'},
+  gold_pickaxe:{name:'金のツルハシ'}, stone_pickaxe:{name:'石のツルハシ'}, wood_pickaxe:{name:'木のツルハシ'},
+  diamond_sword:{name:'ダイヤモンドの剣'}, iron_sword:{name:'鉄の剣'}, gold_sword:{name:'金の剣'},
+  stone_sword:{name:'石の剣'}, wood_sword:{name:'木の剣'},
+  diamond_axe:{name:'ダイヤモンドの斧'}, iron_axe:{name:'鉄の斧'}, gold_axe:{name:'金の斧'},
+  stone_axe:{name:'石の斧'}, wood_axe:{name:'木の斧'},
+  diamond_shovel:{name:'ダイヤモンドのスコップ'}, iron_shovel:{name:'鉄のスコップ'},
+  gold_shovel:{name:'金のスコップ'}, stone_shovel:{name:'石のスコップ'}, wood_shovel:{name:'木のスコップ'},
+  diamond_hoe:{name:'ダイヤモンドのクワ'}, iron_hoe:{name:'鉄のクワ'}, gold_hoe:{name:'金のクワ'},
+  stone_hoe:{name:'石のクワ'}, wood_hoe:{name:'木のクワ'},
+  diamond_helmet:{name:'ダイヤモンドのヘルメット'}, iron_helmet:{name:'鉄のヘルメット'}, gold_helmet:{name:'金のヘルメット'},
+  diamond_chestplate:{name:'ダイヤモンドのチェストプレート'}, iron_chestplate:{name:'鉄のチェストプレート'}, gold_chestplate:{name:'金のチェストプレート'},
+  diamond_leggings:{name:'ダイヤモンドのレギンス'}, iron_leggings:{name:'鉄のレギンス'}, gold_leggings:{name:'金のレギンス'},
+  diamond_boots:{name:'ダイヤモンドのブーツ'}, iron_boots:{name:'鉄のブーツ'}, gold_boots:{name:'金のブーツ'},
+  bow:{name:'弓'}, arrow:{name:'矢'}, bread:{name:'パン'}, torch:{name:'松明'}, bucket:{name:'バケツ'},
+  crafting_table:{name:'作業台'}, furnace:{name:'かまど'},
+  diamond:{name:'ダイヤモンド'}, iron_ingot:{name:'鉄インゴット'}, gold_ingot:{name:'金インゴット'},
+  cobblestone:{name:'丸石'}, stick:{name:'木の棒'}, planks:{name:'板材'}, coal:{name:'石炭'},
+  wheat:{name:'小麦'}, feather:{name:'羽根'}, flint:{name:'火打石'}, string:{name:'糸'},
 };
 Object.keys(items).forEach(k => { items[k].img = IMG[k] || ''; });
 
@@ -558,16 +781,21 @@ const game = {
     document.getElementById('btn-craft').addEventListener('click', () => this.checkRecipe());
     document.getElementById('btn-next').addEventListener('click',  () => this.nextQuestion());
     document.getElementById('btn-more').addEventListener('click',  () => this.nextQuestion());
+
     const initAudio = () => {
       if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
     };
     document.addEventListener('touchstart', initAudio, {once:true});
     document.addEventListener('click', initAudio, {once:true});
+
     if (window.speechSynthesis) {
       this.voices = speechSynthesis.getVoices();
       speechSynthesis.onvoiceschanged = () => { this.voices = speechSynthesis.getVoices(); };
     }
+
+    // レイアウト再計算（DOM確定後）
+    setLayout();
     this.nextQuestion();
   },
 
@@ -576,7 +804,7 @@ const game = {
       if (!window.speechSynthesis) return;
       speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
-      u.lang = 'ja-JP'; u.rate = 0.9; u.pitch = 1.05;
+      u.lang='ja-JP'; u.rate=0.9; u.pitch=1.05;
       const v = this.voices.find(v => v.lang && v.lang.includes('ja'));
       if (v) u.voice = v;
       speechSynthesis.speak(u);
@@ -589,19 +817,19 @@ const game = {
       const ctx = this.audioCtx, now = ctx.currentTime;
       const osc = ctx.createOscillator(), gain = ctx.createGain();
       osc.connect(gain); gain.connect(ctx.destination);
-      if (type === 'click') {
+      if (type==='click') {
         osc.type='square'; osc.frequency.setValueAtTime(600,now); osc.frequency.exponentialRampToValueAtTime(200,now+.06);
         gain.gain.setValueAtTime(.12,now); gain.gain.exponentialRampToValueAtTime(.001,now+.06);
         osc.start(now); osc.stop(now+.06);
-      } else if (type === 'place') {
+      } else if (type==='place') {
         osc.type='square'; osc.frequency.setValueAtTime(250,now); osc.frequency.exponentialRampToValueAtTime(500,now+.07);
         gain.gain.setValueAtTime(.18,now); gain.gain.exponentialRampToValueAtTime(.001,now+.1);
         osc.start(now); osc.stop(now+.1);
-      } else if (type === 'remove') {
+      } else if (type==='remove') {
         osc.type='triangle'; osc.frequency.setValueAtTime(500,now); osc.frequency.exponentialRampToValueAtTime(180,now+.08);
         gain.gain.setValueAtTime(.12,now); gain.gain.exponentialRampToValueAtTime(.001,now+.08);
         osc.start(now); osc.stop(now+.08);
-      } else if (type === 'success') {
+      } else if (type==='success') {
         osc.disconnect(); gain.disconnect();
         [523,659,784,1047].forEach((f,i) => {
           const o=ctx.createOscillator(), g=ctx.createGain();
@@ -611,7 +839,7 @@ const game = {
           g.gain.setValueAtTime(.25,t); g.gain.exponentialRampToValueAtTime(.001,t+.35);
           o.start(t); o.stop(t+.35);
         });
-      } else if (type === 'fail') {
+      } else if (type==='fail') {
         osc.type='sawtooth'; osc.frequency.setValueAtTime(200,now); osc.frequency.exponentialRampToValueAtTime(80,now+.25);
         gain.gain.setValueAtTime(.18,now); gain.gain.exponentialRampToValueAtTime(.001,now+.25);
         osc.start(now); osc.stop(now+.25);
@@ -643,9 +871,7 @@ const game = {
       slot.className = 'inv-slot';
       slot.dataset.itemId = key;
       const img = document.createElement('img');
-      img.src = items[key].img;
-      img.alt = items[key].name;
-      img.draggable = false;
+      img.src = items[key].img; img.alt = items[key].name; img.draggable = false;
       img.onerror = () => { img.style.opacity = '.25'; };
       slot.appendChild(img);
       const nm = document.createElement('div');
@@ -657,12 +883,10 @@ const game = {
       slot.addEventListener('touchend', h);
       g.appendChild(slot);
     });
-    // Add one empty slot to complete the 2×6 grid (11 items → 12th is blank)
+    // 12マス目を空スロットで埋める（2列×6行 or 4列×3行）
     const empty = document.createElement('div');
     empty.className = 'inv-slot';
-    empty.style.cursor = 'default';
-    empty.style.background = 'rgba(0,0,0,0.08)';
-    empty.style.borderColor = 'rgba(0,0,0,0.15)';
+    empty.style.cssText = 'cursor:default;background:rgba(0,0,0,.08);border-color:rgba(0,0,0,.15)';
     g.appendChild(empty);
   },
 
@@ -675,15 +899,11 @@ const game = {
 
   handleCraftClick(idx) {
     if (this.gridState[idx]) {
-      this.gridState[idx] = null;
-      this.playSound('remove');
+      this.gridState[idx] = null; this.playSound('remove');
     } else if (this.selectedItem) {
-      this.gridState[idx] = this.selectedItem;
-      this.playSound('place');
+      this.gridState[idx] = this.selectedItem; this.playSound('place');
     } else return;
-    this.refreshCraftDisplay();
-    this.refreshMaterials();
-    this.refreshResult();
+    this.refreshCraftDisplay(); this.refreshMaterials(); this.refreshResult();
   },
 
   updateInvHighlight() {
@@ -701,17 +921,13 @@ const game = {
         const hk = recipe.grid[Math.floor(i/3)][i%3];
         if (hk && !this.gridState[i]) {
           const gh = document.createElement('img');
-          gh.className = 'hint-ghost';
-          gh.src = items[hk].img;
-          gh.draggable = false;
+          gh.className = 'hint-ghost'; gh.src = items[hk].img; gh.draggable = false;
           slot.appendChild(gh);
         }
       }
       if (this.gridState[i]) {
         const img = document.createElement('img');
-        img.className = 'placed-item';
-        img.src = items[this.gridState[i]].img;
-        img.draggable = false;
+        img.className = 'placed-item'; img.src = items[this.gridState[i]].img; img.draggable = false;
         img.onerror = () => { img.style.opacity = '.25'; };
         slot.appendChild(img);
       }
@@ -722,18 +938,16 @@ const game = {
     const bar = document.getElementById('materials-bar');
     bar.innerHTML = '<span id="mat-label">必要:</span>';
     if (!this.currentRecipe) return;
-    const needed = {};
+    const needed = {}, placed = {};
     this.currentRecipe.grid.flat().filter(Boolean).forEach(k => { needed[k] = (needed[k]||0)+1; });
-    const placed = {};
     this.gridState.filter(Boolean).forEach(k => { placed[k] = (placed[k]||0)+1; });
     Object.entries(needed).forEach(([key, total]) => {
       const rem = total - Math.min(placed[key]||0, total);
       const tag = document.createElement('span');
-      tag.className = 'mat-tag' + (rem <= 0 ? ' done' : '');
+      tag.className = 'mat-tag' + (rem<=0?' done':'');
       const img = document.createElement('img');
-      img.src = items[key].img;
-      img.draggable = false;
-      img.onerror = () => { img.style.opacity = '.25'; };
+      img.src = items[key].img; img.draggable = false;
+      img.onerror = () => { img.style.opacity='.25'; };
       tag.appendChild(img);
       tag.appendChild(document.createTextNode(items[key].name + ' ×' + rem));
       bar.appendChild(tag);
@@ -745,9 +959,8 @@ const game = {
     slot.innerHTML = '';
     if (this.checkMatch()) {
       const img = document.createElement('img');
-      img.src = items[this.currentRecipe.id].img;
-      img.draggable = false;
-      img.onerror = () => { img.style.opacity = '.25'; };
+      img.src = items[this.currentRecipe.id].img; img.draggable = false;
+      img.onerror = () => { img.style.opacity='.25'; };
       slot.appendChild(img);
     }
   },
@@ -762,9 +975,8 @@ const game = {
 
   checkMatch() {
     if (!this.currentRecipe) return false;
-    for (let r = 0; r < 3; r++)
-      for (let c = 0; c < 3; c++)
-        if ((this.currentRecipe.grid[r][c]||null) !== (this.gridState[r*3+c]||null)) return false;
+    for (let r=0;r<3;r++) for (let c=0;c<3;c++)
+      if ((this.currentRecipe.grid[r][c]||null) !== (this.gridState[r*3+c]||null)) return false;
     return true;
   },
 
@@ -793,7 +1005,7 @@ const game = {
     document.getElementById('success-modal').classList.remove('show');
     let idx;
     do { idx = Math.floor(Math.random() * recipes.length); }
-    while (recipes.length > 1 && this.currentRecipe && recipes[idx].id === this.currentRecipe.id);
+    while (recipes.length>1 && this.currentRecipe && recipes[idx].id===this.currentRecipe.id);
     this.currentRecipe = recipes[idx];
     this.questionCount++;
     this.gridState = Array(9).fill(null);
@@ -801,7 +1013,7 @@ const game = {
     const r = this.currentRecipe;
     document.getElementById('target-img').src = items[r.id].img;
     document.getElementById('target-name').textContent = items[r.id].name;
-    document.getElementById('topbar-counter').textContent = this.correctCount + '/' + (this.questionCount-1) + ' 正解';
+    document.getElementById('topbar-counter').textContent = this.correctCount+'/'+(this.questionCount-1)+' 正解';
     this.clearStatus(); this.updateInvHighlight();
     this.refreshCraftDisplay(); this.refreshMaterials();
     this.refreshResult(); this.refreshHintInv();
@@ -811,7 +1023,7 @@ const game = {
   onSuccess() {
     this.playSound('success'); this.vibrate([100,50,100]);
     this.correctCount++;
-    document.getElementById('topbar-counter').textContent = this.correctCount + '/' + this.questionCount + ' 正解';
+    document.getElementById('topbar-counter').textContent = this.correctCount+'/'+this.questionCount+' 正解';
     this.refreshResult();
     const r = this.currentRecipe;
     document.getElementById('success-item-img').src = items[r.id].img;
@@ -820,7 +1032,7 @@ const game = {
     this.spawnParticles();
     this.speak(items[r.id].name + ' ができた！ すごい！ やったね！');
     const msg = document.getElementById('status-msg');
-    msg.textContent = '🎉 せいこう！'; msg.className = 'success';
+    msg.textContent='🎉 せいこう！'; msg.className='success';
   },
 
   onFail() {
@@ -828,35 +1040,34 @@ const game = {
     const fr = document.getElementById('craft-center');
     fr.classList.remove('shake-anim'); void fr.offsetWidth; fr.classList.add('shake-anim');
     const msg = document.getElementById('status-msg');
-    msg.textContent = '❌ もう一度 調べてみよう！'; msg.className = 'fail';
+    msg.textContent='❌ もう一度 調べてみよう！'; msg.className='fail';
     this.speak('もう一度 調べてみよう');
   },
 
   clearStatus() {
     const msg = document.getElementById('status-msg');
-    msg.textContent = ''; msg.className = '';
+    msg.textContent=''; msg.className='';
   },
 
   spawnParticles() {
     const c = document.getElementById('particles-container');
     c.innerHTML = '';
-    const cx = window.innerWidth/2, cy = window.innerHeight/2;
-    const colors = ['#FFD700','#FFA500','#FFEC00','#FF6B6B','#7FFF00','#00BFFF','#FF69B4','#fff'];
-    for (let i = 0; i < 50; i++) {
-      const p = document.createElement('div');
-      p.className = 'particle';
-      const a = Math.random() * Math.PI * 2;
-      const d = 80 + Math.random() * 220;
-      p.style.left = cx + 'px'; p.style.top = cy + 'px';
-      p.style.background = colors[Math.floor(Math.random() * colors.length)];
-      const sz = 7 + Math.random() * 11;
-      p.style.width = sz + 'px'; p.style.height = sz + 'px';
-      p.style.setProperty('--dx', (Math.cos(a)*d) + 'px');
-      p.style.setProperty('--dy', (Math.sin(a)*d - 60) + 'px');
-      p.style.animationDelay = (Math.random() * .3) + 's';
+    const cx=window.innerWidth/2, cy=window.innerHeight/2;
+    const colors=['#FFD700','#FFA500','#FFEC00','#FF6B6B','#7FFF00','#00BFFF','#FF69B4','#fff'];
+    for (let i=0;i<50;i++) {
+      const p=document.createElement('div');
+      p.className='particle';
+      const a=Math.random()*Math.PI*2, d=80+Math.random()*220;
+      p.style.left=cx+'px'; p.style.top=cy+'px';
+      p.style.background=colors[Math.floor(Math.random()*colors.length)];
+      const sz=7+Math.random()*11;
+      p.style.width=sz+'px'; p.style.height=sz+'px';
+      p.style.setProperty('--dx',(Math.cos(a)*d)+'px');
+      p.style.setProperty('--dy',(Math.sin(a)*d-60)+'px');
+      p.style.animationDelay=(Math.random()*.3)+'s';
       c.appendChild(p);
     }
-    setTimeout(() => { c.innerHTML = ''; }, 1900);
+    setTimeout(()=>{c.innerHTML='';},1900);
   },
 };
 
