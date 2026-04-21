@@ -140,7 +140,7 @@ body {
 .mc-btn:active { border-color: var(--mc-dark) #aaa #aaa var(--mc-dark); filter: brightness(.88); }
 .mc-btn.sub {
   flex: 1; padding: 0;
-  font-size: clamp(13px, 1.8vw, 20px);
+  font-size: clamp(15px, 2vw, 22px);
   min-height: 0;
 }
 .mc-btn.reset-btn { background:#3a7fc1; border-color:#6db0f0 #1a4f8a #1a4f8a #6db0f0; }
@@ -304,6 +304,10 @@ body {
    ===================================================== */
 @media (orientation: landscape) {
 
+  :root {
+    --bottom-h: 74px;   /* リセット・ヒント・次へ ボタンを厚く */
+  }
+
   #main { flex-direction: row; }
 
   /* ---- 左エリア ---- */
@@ -371,14 +375,19 @@ body {
 
   #status-msg { font-size: clamp(10px,1.3vw,14px); min-height:18px; }
 
-  /* 作る！ボタン行 */
+  /* 作る！ボタン行 — 横画面でも厚く */
   #craft-btn-row {
     display: flex; align-items: center; justify-content: center;
-    padding: 7px 14px;
+    padding: 8px 14px;
     border-top: 3px solid var(--mc-dark);
     background: #9a9a9a;
     flex-shrink: 0;
-    min-height: 58px;
+    min-height: 66px;
+  }
+  .mc-btn.craft-main {
+    font-size: clamp(18px,2.5vw,28px);
+    min-height: 52px;
+    width: 82%;
   }
 
   /* ---- 右エリア（インベントリ） ---- */
@@ -408,20 +417,21 @@ body {
 
 /* =====================================================
    PORTRAIT レイアウト（縦画面）
-   上段：ターゲット＋作業台
-   下段：インベントリ（横並び）＋作る！ボタン
+   上段：ターゲット＋素材＋作業台＋作る！
+   下段：インベントリ（大きく）
    ===================================================== */
 @media (orientation: portrait) {
 
   :root {
-    --bottom-h: 54px;
+    --bottom-h: 74px;   /* リセット・ヒント・次へ ボタンを厚く */
   }
 
   #main { flex-direction: column; }
 
   /* ---- 上段：ターゲット＋素材＋作業台 ---- */
   #left-area {
-    flex: 1;
+    /* 画面全体の上55%を上段に使う */
+    flex: 0 0 55%;
     display: flex; flex-direction: column;
     overflow: hidden; min-width: 0; min-height: 0;
   }
@@ -437,7 +447,7 @@ body {
   #target-slot { width: 72px; height: 72px; }
   #target-info { display:flex; flex-direction:column; gap:2px; }
   #target-label { font-size: 11px; font-weight:bold; color:var(--mc-text); text-shadow:1px 1px 0 #fff; }
-  #target-name  { font-size: clamp(14px,3.5vw,20px); font-weight:bold; color:#222; text-shadow:1px 1px 0 #fff; }
+  #target-name  { font-size: clamp(14px,3.5vw,22px); font-weight:bold; color:#222; text-shadow:1px 1px 0 #fff; }
 
   /* 素材バー */
   #materials-bar {
@@ -445,13 +455,13 @@ body {
     padding: 4px 10px;
     border-bottom: 3px solid var(--mc-dark);
     background: #adadad;
-    flex-shrink: 0; min-height: 36px;
+    flex-shrink: 0; min-height: 38px;
   }
-  #mat-label { font-size: 10px; font-weight:bold; color:var(--mc-text); text-shadow:1px 1px 0 #fff; margin-right:2px; white-space:nowrap; }
-  .mat-tag { font-size: clamp(10px,2.5vw,14px); }
-  .mat-tag img { width:16px; height:16px; }
+  #mat-label { font-size: 11px; font-weight:bold; color:var(--mc-text); text-shadow:1px 1px 0 #fff; margin-right:2px; white-space:nowrap; }
+  .mat-tag { font-size: clamp(11px,2.8vw,15px); }
+  .mat-tag img { width:18px; height:18px; }
 
-  /* 作業台エリア */
+  /* 作業台エリア — flex:1 で残りを使う */
   #craft-center {
     flex: 1;
     display: flex; flex-direction: column;
@@ -468,32 +478,36 @@ body {
     padding: 3px; border: 3px solid var(--mc-dark);
   }
   .craft-slot {
-    width:  var(--slot-size-p, clamp(58px, 15vw, 90px));
-    height: var(--slot-size-p, clamp(58px, 15vw, 90px));
+    width:  var(--slot-size-p, clamp(60px, 17vw, 110px));
+    height: var(--slot-size-p, clamp(60px, 17vw, 110px));
   }
   #result-slot {
-    width:  var(--slot-size-p, clamp(58px, 15vw, 90px));
-    height: var(--slot-size-p, clamp(58px, 15vw, 90px));
+    width:  var(--slot-size-p, clamp(60px, 17vw, 110px));
+    height: var(--slot-size-p, clamp(60px, 17vw, 110px));
   }
   #arrow-area { display:flex; flex-direction:column; align-items:center; gap:4px; }
-  #arrow-icon { width:28px; height:28px; font-size:15px; }
+  #arrow-icon { width:30px; height:30px; font-size:16px; }
 
-  #status-msg { font-size: 11px; min-height:16px; }
+  #status-msg { font-size: 12px; min-height:16px; }
 
-  /* 作る！ボタン行 */
+  /* 作る！ボタン行 — 縦画面でも厚く */
   #craft-btn-row {
     display: flex; align-items: center; justify-content: center;
-    padding: 5px 10px;
+    padding: 8px 10px;
     border-top: 3px solid var(--mc-dark);
     background: #9a9a9a;
     flex-shrink: 0;
-    min-height: 50px;
+    min-height: 62px;
   }
-  .mc-btn.craft-main { font-size: clamp(16px,4vw,22px); min-height:40px; }
+  .mc-btn.craft-main {
+    font-size: clamp(18px,4.5vw,26px);
+    min-height: 48px;
+    width: 85%;
+  }
 
-  /* ---- 下段：インベントリ（横画面・3列4行または4列3行） ---- */
+  /* ---- 下段：インベントリ（画面の残り45%） ---- */
   #right-panel {
-    height: clamp(160px, 32%, 220px);
+    flex: 0 0 45%;          /* 残り45%をインベントリに充てる */
     width: 100%;
     border-left: none;
     border-top: 3px solid var(--mc-dark);
@@ -502,18 +516,18 @@ body {
   }
   #inv-header {
     background: #484848; border-bottom: 2px solid var(--mc-dark);
-    padding: 4px; text-align: center; flex-shrink: 0;
+    padding: 5px; text-align: center; flex-shrink: 0;
   }
-  #inv-header-text { color:#fff; font-size:11px; font-weight:bold; text-shadow:2px 2px 0 #000; letter-spacing:1px; }
-  /* 縦画面では横並び：4列3行（12スロット）*/
+  #inv-header-text { color:#fff; font-size:12px; font-weight:bold; text-shadow:2px 2px 0 #000; letter-spacing:1px; }
+  /* 縦画面：3列4行（12スロット）— 横幅が広いので3列でも大きく表示 */
   #inv-grid {
     flex:1; display:grid;
-    grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: repeat(3, 1fr);
-    gap: 3px; padding: 4px;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    gap: 5px; padding: 6px;
     overflow: hidden;
   }
-  .inv-slot .inv-name { font-size: clamp(7px, 1.8vw, 10px); }
+  .inv-slot .inv-name { font-size: clamp(9px, 2.2vw, 13px); }
 
   /* 横画面用要素は縦でも表示 */
   #portrait-only { display: none !important; }
@@ -589,38 +603,37 @@ function setLayout() {
 
   if (isLandscape) {
     // ---- 横画面 ----
-    // 固定部の高さを引いた残りが craft-center の高さ
-    // topbar(32) + target-strip(~118) + materials-bar(~40) + craft-btn-row(~58) + bottom-bar(60) = ~308px
-    // ターゲット画像100px + padding12*2 + border3*2 = 130px (target-strip)
+    // 固定バー: topbar(32) + target-strip(118) + materials-bar(40) + craft-btn-row(66) + bottom-bar(74)
     const topbarH    = 32;
-    const targetH    = 100 + 6*2 + 3*2; // padding + border
+    const targetH    = 100 + 6*2 + 3*2;  // 画像100 + padding上下6 + border3
     const materialsH = 40;
-    const craftBtnH  = 58;
-    const bottomH    = 60;
+    const craftBtnH  = 66;
+    const bottomH    = 74;
     const craftCenterH = H - topbarH - targetH - materialsH - craftBtnH - bottomH;
-
-    // craft-center に3行 + gap(5*2=10) + padding(6*2=12) + status(18) + gap(5) が入る
-    const available = craftCenterH - 10 - 12 - 18 - 5 - 6; // gap, padding, status, gap, craft-row gap
+    // craft-row内: gap(5*2) + padding(6*2) + status(18) + gap(5)
+    const available = craftCenterH - 22 - 18 - 5;
     const slotSize = Math.floor(Math.max(60, Math.min(available / 3, 150)));
     root.style.setProperty('--slot-size', slotSize + 'px');
 
   } else {
     // ---- 縦画面 ----
-    // 利用可能な幅からスロットサイズを計算
-    // craft-grid は画面幅の左エリアに収まる必要がある
-    // 3 slots + gap(3*2=6) + padding(3*2=6) + border(3*2=6) + arrow(34+8) + result_slot
-    // result_slotと同じサイズとして、横は 4*slot + gap等
-    const invH = Math.min(220, H * 0.32);
+    // left-area は全体の55%、そこからの固定部:
+    // topbar(32) + target-strip(88) + materials-bar(38) + craft-btn-row(62) + bottom-bar(74)
     const topbarH    = 32;
-    const targetH    = 72 + 5*2 + 3*2;
-    const materialsH = 36;
-    const craftBtnH  = 50;
-    const bottomH    = 54;
-    const craftCenterH = H - topbarH - targetH - materialsH - craftBtnH - bottomH - invH;
-    const available = craftCenterH - 6 - 8 - 16 - 4;
-    const slotSizeByH = Math.floor(Math.max(50, Math.min(available / 3, 100)));
-    // 幅からも計算（3スロット + 矢印エリア が横幅に収まるように）
-    const slotSizeByW = Math.floor(Math.max(50, Math.min((W * 0.6 - 50) / 3, 100)));
+    const bottomH    = 74;
+    const leftAreaH  = (H - topbarH - bottomH) * 0.55;  // flex:0 0 55% of #main
+    const targetH    = 72 + 5*2 + 3*2;   // 画像72 + padding5 + border3
+    const materialsH = 38;
+    const craftBtnH  = 62;
+    const craftCenterH = leftAreaH - targetH - materialsH - craftBtnH;
+    // craft-row内余白を引く
+    const available = craftCenterH - 16 - 8 - 4;
+    const slotSizeByH = Math.floor(Math.max(55, Math.min(available / 3, 120)));
+    // 幅からも制約: 3スロット + 矢印エリア(30+8+スロット) が横幅に収まるように
+    // craft-gridの横: slot*3 + gap*2 + padding*2 + border*2 = slot*3 + 16
+    // arrow-area: gap(8) + arrow(30) + gap(4) + result(slot) = slot + 42
+    // 合計: slot*4 + 58 <= W * 0.85 (余裕をもたせる)
+    const slotSizeByW = Math.floor(Math.max(55, Math.min((W * 0.85 - 58) / 4, 120)));
     const slotSize = Math.min(slotSizeByH, slotSizeByW);
     root.style.setProperty('--slot-size-p', slotSize + 'px');
   }
