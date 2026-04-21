@@ -268,35 +268,328 @@ body {
 #target-slot img { width:82%; height:82%; object-fit:contain; image-rendering:pixelated; }
 
 /* =====================================================
-   SUCCESS MODAL
+   TITLE SCREEN
+   ===================================================== */
+#title-screen {
+  position: fixed;
+  top:0; left:0; right:0; bottom:0;
+  z-index: 500;
+  background: #000;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  overflow: hidden;
+}
+
+/* タイトル背景：ブロックのグリッドをアニメーション */
+#title-bg {
+  position: absolute; top:0; left:0; right:0; bottom:0;
+  display: grid;
+  opacity: 0.18;
+  pointer-events: none;
+}
+.title-bg-block {
+  background: var(--mc-slot);
+  border: 1px solid #222;
+  animation: bgPulse 3s ease-in-out infinite;
+}
+@keyframes bgPulse {
+  0%,100% { opacity: 0.4; }
+  50%      { opacity: 1; }
+}
+
+/* タイトルロゴ */
+#title-logo {
+  position: relative; z-index:2;
+  text-align: center;
+  margin-bottom: 16px;
+}
+#title-logo-main {
+  font-family: "Courier New", monospace;
+  font-size: clamp(32px, 8vw, 72px);
+  font-weight: bold;
+  color: #FFD700;
+  text-shadow:
+    4px 4px 0 #8B6914,
+    -2px -2px 0 #000,
+    2px -2px 0 #000,
+    -2px 2px 0 #000,
+    6px 6px 0 rgba(0,0,0,.5);
+  letter-spacing: 2px;
+  animation: titleFloat 2.5s ease-in-out infinite;
+  display: block;
+  line-height: 1.1;
+}
+#title-logo-sub {
+  font-family: "Courier New", monospace;
+  font-size: clamp(14px, 3vw, 26px);
+  font-weight: bold;
+  color: #a0ffa0;
+  text-shadow: 2px 2px 0 #004400, -1px -1px 0 #000;
+  letter-spacing: 3px;
+  display: block;
+  margin-top: 4px;
+  animation: titleFloat 2.5s ease-in-out infinite .4s;
+}
+@keyframes titleFloat {
+  0%,100% { transform: translateY(0px); }
+  50%      { transform: translateY(-8px); }
+}
+
+/* タイトル画面のアイテムアイコン帯 */
+#title-items {
+  position: relative; z-index:2;
+  display: flex; gap: clamp(8px, 2vw, 18px);
+  margin-bottom: clamp(20px, 4vh, 40px);
+}
+.title-item-slot {
+  width: clamp(44px, 8vw, 70px);
+  height: clamp(44px, 8vw, 70px);
+  background: var(--mc-slot);
+  border: 3px solid;
+  border-color: #373737 #fff #fff #373737;
+  display: flex; align-items: center; justify-content: center;
+  animation: titleItemBob 1.8s ease-in-out infinite;
+}
+.title-item-slot:nth-child(2) { animation-delay: .2s; }
+.title-item-slot:nth-child(3) { animation-delay: .4s; }
+.title-item-slot:nth-child(4) { animation-delay: .6s; }
+.title-item-slot:nth-child(5) { animation-delay: .8s; }
+.title-item-slot img {
+  width: 78%; height: 78%;
+  object-fit: contain; image-rendering: pixelated;
+}
+@keyframes titleItemBob {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+
+/* スタートボタン */
+#btn-start {
+  position: relative; z-index:2;
+  font-family: "Courier New", monospace;
+  font-size: clamp(18px, 4vw, 32px);
+  font-weight: bold;
+  color: #fff;
+  background: #5a9e4a;
+  border: 4px solid;
+  border-color: #7acc5a #3d7a2a #3d7a2a #7acc5a;
+  padding: clamp(12px, 2.5vh, 20px) clamp(30px, 8vw, 80px);
+  cursor: pointer;
+  text-shadow: 2px 2px 0 #000;
+  letter-spacing: 2px;
+  animation: startPulse 1s ease-in-out infinite;
+  -webkit-appearance: none;
+}
+@keyframes startPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(90,158,74,0); transform: scale(1); }
+  50%      { box-shadow: 0 0 24px 8px rgba(90,158,74,.5); transform: scale(1.04); }
+}
+#btn-start:active {
+  border-color: #3d7a2a #7acc5a #7acc5a #3d7a2a;
+  transform: scale(0.97);
+}
+
+/* タイトルのコピー文 */
+#title-copy {
+  position: relative; z-index:2;
+  margin-top: clamp(10px, 2vh, 18px);
+  color: #888;
+  font-size: clamp(9px, 1.5vw, 13px);
+  font-family: "Courier New", monospace;
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+/* タイトル画面の流れ星パーティクル */
+#title-particles {
+  position: absolute; top:0; left:0; right:0; bottom:0;
+  pointer-events: none; z-index:1; overflow:hidden;
+}
+.title-star {
+  position: absolute;
+  width: 6px; height: 6px;
+  background: #FFD700;
+  animation: starFall linear infinite;
+  opacity: 0;
+}
+@keyframes starFall {
+  0%   { opacity:0; transform: translateY(-20px) rotate(0deg); }
+  10%  { opacity:1; }
+  90%  { opacity:1; }
+  100% { opacity:0; transform: translateY(110vh) rotate(720deg); }
+}
+
+/* タイトル → ゲーム 遷移 */
+#title-screen.hide {
+  animation: titleFadeOut .5s ease-in forwards;
+}
+@keyframes titleFadeOut {
+  0%   { opacity:1; transform:scale(1); }
+  100% { opacity:0; transform:scale(1.05); }
+}
+
+/* =====================================================
+   SUCCESS MODAL — マインクラフト実績解除風
    ===================================================== */
 #success-modal {
   position: fixed;
-  top:0; left:0; right:0; bottom:0; /* inset:0 の代替 — iOS 14以下互換 */
-  background: rgba(0,0,0,.88);
+  top:0; left:0; right:0; bottom:0;
+  background: rgba(0,0,0,.82);
   display: none;
   flex-direction: column; align-items: center; justify-content: center;
   z-index: 300;
 }
 #success-modal.show { display:flex; }
-#success-item-img {
-  width:160px; height:160px; object-fit:contain; image-rendering:pixelated;
-  animation: successSpin .6s cubic-bezier(.175,.885,.32,1.275) forwards;
-  filter: drop-shadow(0 0 28px rgba(255,215,0,.7));
+
+/* 実績バナー（上からスライドイン） */
+#achievement-banner {
+  background: #1a1a1a;
+  border: 3px solid #FFD700;
+  padding: 10px 20px;
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 20px;
+  animation: bannerSlide .5s cubic-bezier(.175,.885,.32,1.275) forwards;
+  box-shadow: 0 0 30px rgba(255,215,0,.4);
+  max-width: 90vw;
 }
-#success-text { color:#FFD700; font-size:clamp(22px,5vw,40px); font-weight:bold; margin-top:14px; text-shadow:3px 3px 0 #000; animation:pulse 1s ease-in-out infinite; }
-#success-sub  { color:#fff; font-size:clamp(12px,2vw,18px); margin-top:8px; text-shadow:2px 2px 0 #000; }
-#success-modal .mc-btn { margin-top:20px; font-size:16px; padding:12px 24px; }
+@keyframes bannerSlide {
+  0%   { opacity:0; transform: translateY(-60px); }
+  100% { opacity:1; transform: translateY(0); }
+}
+#achievement-icon {
+  width: clamp(48px,8vw,72px); height: clamp(48px,8vw,72px);
+  background: var(--mc-slot);
+  border: 3px solid;
+  border-color: #373737 #fff #fff #373737;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  animation: iconSpin .6s cubic-bezier(.175,.885,.32,1.275) .3s both;
+}
+@keyframes iconSpin {
+  0%   { transform: scale(0) rotate(-180deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+#achievement-icon img {
+  width:80%; height:80%; object-fit:contain; image-rendering:pixelated;
+}
+#achievement-text { display:flex; flex-direction:column; gap:3px; }
+#achievement-label {
+  color: #FFD700;
+  font-size: clamp(10px,1.8vw,15px);
+  font-family: "Courier New", monospace;
+  font-weight: bold;
+  text-shadow: 1px 1px 0 #8B6914;
+  letter-spacing: 1px;
+}
+#achievement-name {
+  color: #fff;
+  font-size: clamp(14px,2.5vw,22px);
+  font-family: "Courier New", monospace;
+  font-weight: bold;
+  text-shadow: 2px 2px 0 #000;
+}
+
+/* 完成アイテム大表示 */
+#success-item-img {
+  width: clamp(100px,18vw,160px);
+  height: clamp(100px,18vw,160px);
+  object-fit:contain; image-rendering:pixelated;
+  animation: itemAppear .5s cubic-bezier(.175,.885,.32,1.275) .6s both;
+  filter: drop-shadow(0 0 20px rgba(255,215,0,.8));
+}
+@keyframes itemAppear {
+  0%   { transform:scale(0); opacity:0; }
+  100% { transform:scale(1); opacity:1; }
+}
+
+#success-text {
+  color: #FFD700;
+  font-size: clamp(20px,4.5vw,38px);
+  font-weight: bold;
+  font-family: "Courier New", monospace;
+  margin-top: 10px;
+  text-shadow: 3px 3px 0 #000, 0 0 20px rgba(255,215,0,.6);
+  animation: pulse 1s ease-in-out infinite .8s both;
+}
+#success-sub {
+  color: #a0ffa0;
+  font-size: clamp(11px,1.8vw,17px);
+  font-family: "Courier New", monospace;
+  margin-top: 6px;
+  text-shadow: 1px 1px 0 #000;
+  animation: itemAppear .4s ease .9s both;
+}
+
+/* チャット欄風メッセージ */
+#chat-log {
+  position: fixed;
+  bottom: 80px; left: 0; right: 0;
+  display: flex; flex-direction: column;
+  align-items: flex-start;
+  padding: 0 12px;
+  pointer-events: none;
+  z-index: 350;
+}
+.chat-line {
+  background: rgba(0,0,0,.7);
+  color: #fff;
+  font-family: "Courier New", monospace;
+  font-size: clamp(11px, 1.8vw, 16px);
+  padding: 3px 8px;
+  margin-bottom: 2px;
+  animation: chatSlide .3s ease forwards;
+  max-width: 90vw;
+}
+@keyframes chatSlide {
+  0%   { opacity:0; transform:translateX(-20px); }
+  100% { opacity:1; transform:translateX(0); }
+}
+
+#success-modal .mc-btn { margin-top:16px; font-size:clamp(14px,2vw,18px); padding:12px 28px; }
+
+/* =====================================================
+   PARTICLES — ピクセルブロック欠片
+   ===================================================== */
+#particles-container {
+  position:fixed; top:0;left:0;right:0;bottom:0;
+  pointer-events:none; z-index:310; overflow:hidden;
+}
+/* ピクセル欠片（四角） */
+.px-particle {
+  position: absolute;
+  image-rendering: pixelated;
+  animation: pxFly var(--dur,1s) ease-out var(--delay,0s) forwards;
+}
+@keyframes pxFly {
+  0%   { opacity:1; transform:translate(0,0) rotate(0deg) scale(1); }
+  100% { opacity:0; transform:translate(var(--dx),var(--dy)) rotate(var(--rot)) scale(.3); }
+}
+/* 経験値オーブ */
+.xp-orb {
+  position: absolute;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #afffaf, #00c800);
+  border: 1px solid #004400;
+  animation: orbFlyOut var(--dur,.8s) ease-out var(--delay,0s) forwards,
+             orbGlow 0.4s ease-in-out var(--collect-t,.8s) forwards;
+  box-shadow: 0 0 6px #00ff00;
+}
+@keyframes orbFlyOut {
+  0%   { opacity:1; transform:translate(0,0) scale(1); }
+  60%  { opacity:1; transform:translate(var(--dx),var(--dy)) scale(1.2); }
+  100% { opacity:1; transform:translate(var(--cx),var(--cy)) scale(.5); }
+}
+@keyframes orbGlow {
+  0%   { opacity:1; box-shadow: 0 0 12px #00ff00; }
+  100% { opacity:0; box-shadow: 0 0 30px #00ff00; transform:scale(2); }
+}
 
 /* アニメーション */
-@keyframes successSpin { 0%{transform:scale(0) rotate(-180deg);opacity:0} 100%{transform:scale(1) rotate(0deg);opacity:1} }
 @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
 @keyframes shake { 0%,100%{transform:none} 10%,50%,90%{transform:translateX(-6px)} 30%,70%{transform:translateX(6px)} }
 .shake-anim { animation:shake .4s cubic-bezier(.36,.07,.19,.97); }
 
-#particles-container { position:fixed; top:0;left:0;right:0;bottom:0; pointer-events:none; z-index:310; }
-.particle { position:absolute; animation:particleFly 1.3s ease-out forwards; }
-@keyframes particleFly { 0%{opacity:1;transform:translate(0,0) scale(1) rotate(0deg)} 100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.2) rotate(360deg)} }
 
 /* =====================================================
    LANDSCAPE レイアウト（横画面）
@@ -535,6 +828,29 @@ body {
 </style>
 </head>
 <body>
+<!-- ===================== TITLE SCREEN ===================== -->
+<div id="title-screen">
+  <div id="title-bg"></div>
+  <div id="title-particles"></div>
+
+  <div id="title-logo">
+    <span id="title-logo-main">⛏ マイクラ<br>クラフトクイズ</span>
+    <span id="title-logo-sub">CRAFTING QUIZ</span>
+  </div>
+
+  <div id="title-items">
+    <!-- JSで動的にアイテム画像を挿入 -->
+  </div>
+
+  <button id="btn-start">▶ はじめる！</button>
+  <div id="title-copy">
+    アイテムを えらんで　作業台に　おこう！
+  </div>
+</div>
+
+<!-- チャットログ -->
+<div id="chat-log"></div>
+
 <div id="app">
   <div id="topbar">
     <span id="topbar-title">⛏ マイクラ クラフトクイズ</span>
@@ -580,7 +896,13 @@ body {
 </div>
 
 <div id="success-modal">
-  <img id="success-item-img" src="" alt="完成" onerror="this.style.opacity='.3'">
+  <div id="achievement-banner">
+    <div id="achievement-icon"><img id="success-item-img" src="" alt="完成" onerror="this.style.opacity='.3'"></div>
+    <div id="achievement-text">
+      <div id="achievement-label">§6 じっせき かいじょ！</div>
+      <div id="achievement-name"></div>
+    </div>
+  </div>
   <div id="success-text">できた！すごい！</div>
   <div id="success-sub"></div>
   <button class="mc-btn green" id="btn-more">🎮 もっと作る！</button>
@@ -595,55 +917,117 @@ function setLayout() {
   const W = window.innerWidth;
   const H = window.innerHeight;
   const root = document.documentElement;
-
-  // --avh: window.innerHeightの実際の値をpx単位でCSSに渡す
   root.style.setProperty('--avh', H);
-
   const isLandscape = W > H;
-
   if (isLandscape) {
-    // ---- 横画面 ----
-    // 固定バー: topbar(32) + target-strip(118) + materials-bar(40) + craft-btn-row(66) + bottom-bar(74)
-    const topbarH    = 32;
-    const targetH    = 100 + 6*2 + 3*2;  // 画像100 + padding上下6 + border3
-    const materialsH = 40;
-    const craftBtnH  = 66;
-    const bottomH    = 74;
+    const topbarH=32, targetH=100+6*2+3*2, materialsH=40, craftBtnH=66, bottomH=74;
     const craftCenterH = H - topbarH - targetH - materialsH - craftBtnH - bottomH;
-    // craft-row内: gap(5*2) + padding(6*2) + status(18) + gap(5)
     const available = craftCenterH - 22 - 18 - 5;
     const slotSize = Math.floor(Math.max(60, Math.min(available / 3, 150)));
     root.style.setProperty('--slot-size', slotSize + 'px');
-
   } else {
-    // ---- 縦画面 ----
-    // left-area は全体の55%、そこからの固定部:
-    // topbar(32) + target-strip(88) + materials-bar(38) + craft-btn-row(62) + bottom-bar(74)
-    const topbarH    = 32;
-    const bottomH    = 74;
-    const leftAreaH  = (H - topbarH - bottomH) * 0.55;  // flex:0 0 55% of #main
-    const targetH    = 72 + 5*2 + 3*2;   // 画像72 + padding5 + border3
-    const materialsH = 38;
-    const craftBtnH  = 62;
+    const topbarH=32, bottomH=74;
+    const leftAreaH = (H - topbarH - bottomH) * 0.55;
+    const targetH=72+5*2+3*2, materialsH=38, craftBtnH=62;
     const craftCenterH = leftAreaH - targetH - materialsH - craftBtnH;
-    // craft-row内余白を引く
     const available = craftCenterH - 16 - 8 - 4;
     const slotSizeByH = Math.floor(Math.max(55, Math.min(available / 3, 120)));
-    // 幅からも制約: 3スロット + 矢印エリア(30+8+スロット) が横幅に収まるように
-    // craft-gridの横: slot*3 + gap*2 + padding*2 + border*2 = slot*3 + 16
-    // arrow-area: gap(8) + arrow(30) + gap(4) + result(slot) = slot + 42
-    // 合計: slot*4 + 58 <= W * 0.85 (余裕をもたせる)
     const slotSizeByW = Math.floor(Math.max(55, Math.min((W * 0.85 - 58) / 4, 120)));
     const slotSize = Math.min(slotSizeByH, slotSizeByW);
     root.style.setProperty('--slot-size-p', slotSize + 'px');
   }
 }
-
-// 初回 + リサイズ + 向き変更時に再計算
 window.addEventListener('resize', setLayout);
 window.addEventListener('orientationchange', () => { setTimeout(setLayout, 120); });
-// DOMContentLoaded前でも呼べるよう即実行
 setLayout();
+
+// =====================================================
+// TITLE SCREEN
+// =====================================================
+function initTitleScreen() {
+  // 背景ブロックグリッド生成
+  const bg = document.getElementById('title-bg');
+  const cols = Math.ceil(window.innerWidth / 48) + 1;
+  const rows = Math.ceil(window.innerHeight / 48) + 1;
+  bg.style.gridTemplateColumns = `repeat(${cols}, 48px)`;
+  bg.style.gridTemplateRows = `repeat(${rows}, 48px)`;
+  bg.innerHTML = '';
+  const blockColors = ['#8b8b8b','#7a9a5a','#6b7a4a','#5a6a3a','#8b7a6a','#7a6a5a'];
+  for (let i = 0; i < cols * rows; i++) {
+    const b = document.createElement('div');
+    b.className = 'title-bg-block';
+    b.style.background = blockColors[Math.floor(Math.random() * blockColors.length)];
+    b.style.animationDelay = (Math.random() * 3) + 's';
+    b.style.animationDuration = (2 + Math.random() * 2) + 's';
+    bg.appendChild(b);
+  }
+
+  // タイトル画面アイテム表示（ランダム5種）
+  const titleItemKeys = ['diamond_pickaxe','diamond_sword','gold_axe','iron_chestplate','bow','torch','crafting_table','furnace'];
+  const picked = titleItemKeys.sort(()=>Math.random()-.5).slice(0,5);
+  const itemsEl = document.getElementById('title-items');
+  itemsEl.innerHTML = '';
+  picked.forEach(key => {
+    const slot = document.createElement('div');
+    slot.className = 'title-item-slot';
+    const img = document.createElement('img');
+    img.src = IMG[key] || '';
+    img.draggable = false;
+    img.onerror = () => { img.style.opacity='.3'; };
+    slot.appendChild(img);
+    itemsEl.appendChild(slot);
+  });
+
+  // 流れ星パーティクル
+  const tp = document.getElementById('title-particles');
+  tp.innerHTML = '';
+  for (let i = 0; i < 20; i++) {
+    const s = document.createElement('div');
+    s.className = 'title-star';
+    s.style.left = (Math.random() * 100) + '%';
+    s.style.top = (Math.random() * 100) + '%';
+    s.style.width = s.style.height = (4 + Math.random() * 8) + 'px';
+    const starColors = ['#FFD700','#7FFF00','#00BFFF','#FF69B4','#fff'];
+    s.style.background = starColors[Math.floor(Math.random() * starColors.length)];
+    s.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+    s.style.animationDuration = (4 + Math.random() * 6) + 's';
+    s.style.animationDelay = (Math.random() * 8) + 's';
+    tp.appendChild(s);
+  }
+
+  // スタートボタン
+  document.getElementById('btn-start').addEventListener('click', () => {
+    const initAudio = () => {
+      if (!game.audioCtx) game.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (game.audioCtx.state === 'suspended') game.audioCtx.resume();
+    };
+    initAudio();
+    game.playSound('start');
+    const ts = document.getElementById('title-screen');
+    ts.classList.add('hide');
+    setTimeout(() => {
+      ts.style.display = 'none';
+      // タイトルが消えてから初めて読み上げ
+      game.speak(game.currentRecipe ? items[game.currentRecipe.id].name + ' を作ろう！' : '');
+    }, 500);
+  });
+}
+
+// =====================================================
+// CHAT LOG
+// =====================================================
+function showChatLine(html, duration=3500) {
+  const log = document.getElementById('chat-log');
+  const line = document.createElement('div');
+  line.className = 'chat-line';
+  line.innerHTML = html;
+  log.appendChild(line);
+  setTimeout(() => {
+    line.style.transition = 'opacity .5s';
+    line.style.opacity = '0';
+    setTimeout(() => line.remove(), 500);
+  }, duration);
+}
 
 // =====================================================
 // IMAGE URLS — from Minecraft Japan Wiki
@@ -794,21 +1178,18 @@ const game = {
     document.getElementById('btn-craft').addEventListener('click', () => this.checkRecipe());
     document.getElementById('btn-next').addEventListener('click',  () => this.nextQuestion());
     document.getElementById('btn-more').addEventListener('click',  () => this.nextQuestion());
-
     const initAudio = () => {
       if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
     };
     document.addEventListener('touchstart', initAudio, {once:true});
     document.addEventListener('click', initAudio, {once:true});
-
     if (window.speechSynthesis) {
       this.voices = speechSynthesis.getVoices();
       speechSynthesis.onvoiceschanged = () => { this.voices = speechSynthesis.getVoices(); };
     }
-
-    // レイアウト再計算（DOM確定後）
     setLayout();
+    initTitleScreen();
     this.nextQuestion();
   },
 
@@ -828,34 +1209,67 @@ const game = {
     if (!this.audioCtx) return;
     try {
       const ctx = this.audioCtx, now = ctx.currentTime;
-      const osc = ctx.createOscillator(), gain = ctx.createGain();
-      osc.connect(gain); gain.connect(ctx.destination);
-      if (type==='click') {
-        osc.type='square'; osc.frequency.setValueAtTime(600,now); osc.frequency.exponentialRampToValueAtTime(200,now+.06);
-        gain.gain.setValueAtTime(.12,now); gain.gain.exponentialRampToValueAtTime(.001,now+.06);
-        osc.start(now); osc.stop(now+.06);
-      } else if (type==='place') {
-        osc.type='square'; osc.frequency.setValueAtTime(250,now); osc.frequency.exponentialRampToValueAtTime(500,now+.07);
-        gain.gain.setValueAtTime(.18,now); gain.gain.exponentialRampToValueAtTime(.001,now+.1);
-        osc.start(now); osc.stop(now+.1);
-      } else if (type==='remove') {
-        osc.type='triangle'; osc.frequency.setValueAtTime(500,now); osc.frequency.exponentialRampToValueAtTime(180,now+.08);
-        gain.gain.setValueAtTime(.12,now); gain.gain.exponentialRampToValueAtTime(.001,now+.08);
-        osc.start(now); osc.stop(now+.08);
-      } else if (type==='success') {
-        osc.disconnect(); gain.disconnect();
-        [523,659,784,1047].forEach((f,i) => {
+
+      if (type === 'start') {
+        // タイトル画面スタート：上昇するファンファーレ
+        [[261,0],[329,.1],[392,.2],[523,.3],[659,.45],[784,.6]].forEach(([f,t]) => {
+          const o=ctx.createOscillator(), g=ctx.createGain();
+          o.connect(g); g.connect(ctx.destination);
+          o.type='square'; o.frequency.value=f;
+          g.gain.setValueAtTime(.15,now+t);
+          g.gain.exponentialRampToValueAtTime(.001,now+t+.25);
+          o.start(now+t); o.stop(now+t+.25);
+        });
+      } else if (type === 'click') {
+        const o=ctx.createOscillator(), g=ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.type='square'; o.frequency.setValueAtTime(600,now); o.frequency.exponentialRampToValueAtTime(200,now+.06);
+        g.gain.setValueAtTime(.12,now); g.gain.exponentialRampToValueAtTime(.001,now+.06);
+        o.start(now); o.stop(now+.06);
+      } else if (type === 'place') {
+        const o=ctx.createOscillator(), g=ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.type='square'; o.frequency.setValueAtTime(250,now); o.frequency.exponentialRampToValueAtTime(500,now+.07);
+        g.gain.setValueAtTime(.18,now); g.gain.exponentialRampToValueAtTime(.001,now+.1);
+        o.start(now); o.stop(now+.1);
+      } else if (type === 'remove') {
+        const o=ctx.createOscillator(), g=ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.type='triangle'; o.frequency.setValueAtTime(500,now); o.frequency.exponentialRampToValueAtTime(180,now+.08);
+        g.gain.setValueAtTime(.12,now); g.gain.exponentialRampToValueAtTime(.001,now+.08);
+        o.start(now); o.stop(now+.08);
+      } else if (type === 'success') {
+        // マインクラフト実績解除音：「ding + 和音 + 余韻」
+        // 低い打撃音
+        const kick=ctx.createOscillator(), kg=ctx.createGain();
+        kick.connect(kg); kg.connect(ctx.destination);
+        kick.type='sine'; kick.frequency.setValueAtTime(120,now); kick.frequency.exponentialRampToValueAtTime(40,now+.15);
+        kg.gain.setValueAtTime(.4,now); kg.gain.exponentialRampToValueAtTime(.001,now+.15);
+        kick.start(now); kick.stop(now+.15);
+        // メロディ：ドミソド（実績解除っぽい）
+        [[523,0,.3],[659,.1,.3],[784,.2,.35],[1047,.35,.6],[1319,.55,.7]].forEach(([f,t,dur]) => {
           const o=ctx.createOscillator(), g=ctx.createGain();
           o.connect(g); g.connect(ctx.destination);
           o.type='triangle'; o.frequency.value=f;
-          const t=now+i*.12;
-          g.gain.setValueAtTime(.25,t); g.gain.exponentialRampToValueAtTime(.001,t+.35);
-          o.start(t); o.stop(t+.35);
+          g.gain.setValueAtTime(.25,now+t);
+          g.gain.exponentialRampToValueAtTime(.001,now+t+dur);
+          o.start(now+t); o.stop(now+t+dur);
         });
-      } else if (type==='fail') {
-        osc.type='sawtooth'; osc.frequency.setValueAtTime(200,now); osc.frequency.exponentialRampToValueAtTime(80,now+.25);
-        gain.gain.setValueAtTime(.18,now); gain.gain.exponentialRampToValueAtTime(.001,now+.25);
-        osc.start(now); osc.stop(now+.25);
+        // 高いキラキラ余韻
+        [2093,2637].forEach((f,i) => {
+          const o=ctx.createOscillator(), g=ctx.createGain();
+          o.connect(g); g.connect(ctx.destination);
+          o.type='sine'; o.frequency.value=f;
+          const t=now+.7+i*.1;
+          g.gain.setValueAtTime(.1,t); g.gain.exponentialRampToValueAtTime(.001,t+.5);
+          o.start(t); o.stop(t+.5);
+        });
+      } else if (type === 'fail') {
+        const o=ctx.createOscillator(), g=ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.type='sawtooth'; o.frequency.setValueAtTime(200,now); o.frequency.exponentialRampToValueAtTime(80,now+.25);
+        g.gain.setValueAtTime(.18,now); g.gain.exponentialRampToValueAtTime(.001,now+.25);
+        o.start(now); o.stop(now+.25);
       }
     } catch(e) {}
   },
@@ -896,7 +1310,6 @@ const game = {
       slot.addEventListener('touchend', h);
       g.appendChild(slot);
     });
-    // 12マス目を空スロットで埋める（2列×6行 or 4列×3行）
     const empty = document.createElement('div');
     empty.className = 'inv-slot';
     empty.style.cssText = 'cursor:default;background:rgba(0,0,0,.08);border-color:rgba(0,0,0,.15)';
@@ -1030,19 +1443,41 @@ const game = {
     this.clearStatus(); this.updateInvHighlight();
     this.refreshCraftDisplay(); this.refreshMaterials();
     this.refreshResult(); this.refreshHintInv();
-    this.speak(items[r.id].name + ' を作ろう！');
+    // タイトル画面が表示中は読み上げしない
+    const ts = document.getElementById('title-screen');
+    if (!ts || ts.style.display === 'none') {
+      this.speak(items[r.id].name + ' を作ろう！');
+    }
   },
 
   onSuccess() {
-    this.playSound('success'); this.vibrate([100,50,100]);
+    this.playSound('success');
+    this.vibrate([80, 40, 80, 40, 120]);
     this.correctCount++;
     document.getElementById('topbar-counter').textContent = this.correctCount+'/'+this.questionCount+' 正解';
     this.refreshResult();
+
     const r = this.currentRecipe;
+    // 実績バナー更新
     document.getElementById('success-item-img').src = items[r.id].img;
-    document.getElementById('success-sub').textContent = items[r.id].name + ' ができました！';
+    document.getElementById('achievement-name').textContent = items[r.id].name + ' を クラフト！';
+    document.getElementById('success-sub').textContent = '✨ ' + items[r.id].name + ' ができました！';
+
     document.getElementById('success-modal').classList.add('show');
-    this.spawnParticles();
+
+    // ピクセル欠片 + 経験値オーブ演出
+    this.spawnPixelParticles();
+    setTimeout(() => this.spawnXpOrbs(), 400);
+
+    // チャット欄メッセージ（250ms後に表示）
+    setTimeout(() => {
+      showChatLine(`<span style="color:#FFD700">§6[じっせき] </span><span style="color:#fff">${items[r.id].name} を クラフトした！</span>`);
+    }, 600);
+    setTimeout(() => {
+      const msgs = ['すごい！','やったね！','さすが！','かんぺき！','うまい！'];
+      showChatLine(`<span style="color:#55FF55">* ${msgs[Math.floor(Math.random()*msgs.length)]}</span>`);
+    }, 1100);
+
     this.speak(items[r.id].name + ' ができた！ すごい！ やったね！');
     const msg = document.getElementById('status-msg');
     msg.textContent='🎉 せいこう！'; msg.className='success';
@@ -1055,6 +1490,7 @@ const game = {
     const msg = document.getElementById('status-msg');
     msg.textContent='❌ もう一度 調べてみよう！'; msg.className='fail';
     this.speak('もう一度 調べてみよう');
+    showChatLine('<span style="color:#FF5555">もう一度 チャレンジ！</span>', 2500);
   },
 
   clearStatus() {
@@ -1062,25 +1498,69 @@ const game = {
     msg.textContent=''; msg.className='';
   },
 
-  spawnParticles() {
+  // ブロック破壊エフェクト：四角いピクセル欠片が飛び散る
+  spawnPixelParticles() {
     const c = document.getElementById('particles-container');
     c.innerHTML = '';
-    const cx=window.innerWidth/2, cy=window.innerHeight/2;
-    const colors=['#FFD700','#FFA500','#FFEC00','#FF6B6B','#7FFF00','#00BFFF','#FF69B4','#fff'];
-    for (let i=0;i<50;i++) {
-      const p=document.createElement('div');
-      p.className='particle';
-      const a=Math.random()*Math.PI*2, d=80+Math.random()*220;
-      p.style.left=cx+'px'; p.style.top=cy+'px';
-      p.style.background=colors[Math.floor(Math.random()*colors.length)];
-      const sz=7+Math.random()*11;
-      p.style.width=sz+'px'; p.style.height=sz+'px';
-      p.style.setProperty('--dx',(Math.cos(a)*d)+'px');
-      p.style.setProperty('--dy',(Math.sin(a)*d-60)+'px');
-      p.style.animationDelay=(Math.random()*.3)+'s';
+    const cx = window.innerWidth/2, cy = window.innerHeight * 0.38;
+    // ブロック色（マインクラフトのブロック破壊色）
+    const blockColors = [
+      '#FFD700','#FFA500','#FF6B00',  // 金色系
+      '#7FFF00','#5aaa2a',            // 緑系
+      '#00BFFF','#0080FF',            // 青系
+      '#FF69B4','#FF1493',            // ピンク系
+      '#fff','#ddd','#aaa',           // 白グレー
+    ];
+    for (let i = 0; i < 60; i++) {
+      const p = document.createElement('div');
+      p.className = 'px-particle';
+      const sz = 6 + Math.random() * 14;
+      p.style.width = sz + 'px';
+      p.style.height = sz + 'px';
+      p.style.background = blockColors[Math.floor(Math.random() * blockColors.length)];
+      p.style.borderRadius = Math.random() > 0.7 ? '2px' : '0';
+      p.style.left = cx + 'px';
+      p.style.top = cy + 'px';
+      const angle = Math.random() * Math.PI * 2;
+      const dist = 80 + Math.random() * 240;
+      p.style.setProperty('--dx', (Math.cos(angle)*dist) + 'px');
+      p.style.setProperty('--dy', (Math.sin(angle)*dist - 60) + 'px');
+      p.style.setProperty('--rot', (Math.random()*720 - 360) + 'deg');
+      p.style.setProperty('--dur', (.6 + Math.random()*.8) + 's');
+      p.style.setProperty('--delay', (Math.random()*.25) + 's');
       c.appendChild(p);
     }
-    setTimeout(()=>{c.innerHTML='';},1900);
+    setTimeout(() => { c.innerHTML = ''; }, 2000);
+  },
+
+  // 経験値オーブが飛び出してプレイヤーの方に集まる
+  spawnXpOrbs() {
+    const c = document.getElementById('particles-container');
+    const cx = window.innerWidth/2, cy = window.innerHeight * 0.38;
+    // 集まる先（画面中央下）
+    const collectX = window.innerWidth/2 - cx;
+    const collectY = window.innerHeight * 0.75 - cy;
+    for (let i = 0; i < 18; i++) {
+      const orb = document.createElement('div');
+      orb.className = 'xp-orb';
+      const sz = 8 + Math.random() * 8;
+      orb.style.width = sz + 'px'; orb.style.height = sz + 'px';
+      orb.style.left = cx + 'px'; orb.style.top = cy + 'px';
+      // 最初は外に飛び出す
+      const angle = Math.random() * Math.PI * 2;
+      const dist = 40 + Math.random() * 100;
+      orb.style.setProperty('--dx', (Math.cos(angle)*dist) + 'px');
+      orb.style.setProperty('--dy', (Math.sin(angle)*dist) + 'px');
+      // 集まる先
+      orb.style.setProperty('--cx', collectX + 'px');
+      orb.style.setProperty('--cy', collectY + 'px');
+      const delay = .1 + Math.random() * .4;
+      const dur = .5 + Math.random() * .4;
+      orb.style.setProperty('--dur', dur + 's');
+      orb.style.setProperty('--delay', delay + 's');
+      orb.style.setProperty('--collect-t', (delay + dur) + 's');
+      c.appendChild(orb);
+    }
   },
 };
 
