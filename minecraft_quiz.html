@@ -1008,7 +1008,7 @@ function initTitleScreen() {
     setTimeout(() => {
       ts.style.display = 'none';
       // タイトルが消えてから初めて読み上げ
-      game.speak(game.currentRecipe ? items[game.currentRecipe.id].name + ' を作ろう！' : '');
+      game.speak(game.currentRecipe ? (items[game.currentRecipe.id].yomi || items[game.currentRecipe.id].name) + ' を つくろう！' : '');
     }, 500);
   });
 }
@@ -1093,25 +1093,61 @@ const IMG = {
 const INVENTORY_KEYS = ['diamond','iron_ingot','gold_ingot','cobblestone','planks','stick','coal','wheat','feather','flint','string'];
 
 const items = {
-  diamond_pickaxe:{name:'ダイヤモンドのツルハシ'}, iron_pickaxe:{name:'鉄のツルハシ'},
-  gold_pickaxe:{name:'金のツルハシ'}, stone_pickaxe:{name:'石のツルハシ'}, wood_pickaxe:{name:'木のツルハシ'},
-  diamond_sword:{name:'ダイヤモンドの剣'}, iron_sword:{name:'鉄の剣'}, gold_sword:{name:'金の剣'},
-  stone_sword:{name:'石の剣'}, wood_sword:{name:'木の剣'},
-  diamond_axe:{name:'ダイヤモンドの斧'}, iron_axe:{name:'鉄の斧'}, gold_axe:{name:'金の斧'},
-  stone_axe:{name:'石の斧'}, wood_axe:{name:'木の斧'},
-  diamond_shovel:{name:'ダイヤモンドのスコップ'}, iron_shovel:{name:'鉄のスコップ'},
-  gold_shovel:{name:'金のスコップ'}, stone_shovel:{name:'石のスコップ'}, wood_shovel:{name:'木のスコップ'},
-  diamond_hoe:{name:'ダイヤモンドのクワ'}, iron_hoe:{name:'鉄のクワ'}, gold_hoe:{name:'金のクワ'},
-  stone_hoe:{name:'石のクワ'}, wood_hoe:{name:'木のクワ'},
-  diamond_helmet:{name:'ダイヤモンドのヘルメット'}, iron_helmet:{name:'鉄のヘルメット'}, gold_helmet:{name:'金のヘルメット'},
-  diamond_chestplate:{name:'ダイヤモンドのチェストプレート'}, iron_chestplate:{name:'鉄のチェストプレート'}, gold_chestplate:{name:'金のチェストプレート'},
-  diamond_leggings:{name:'ダイヤモンドのレギンス'}, iron_leggings:{name:'鉄のレギンス'}, gold_leggings:{name:'金のレギンス'},
-  diamond_boots:{name:'ダイヤモンドのブーツ'}, iron_boots:{name:'鉄のブーツ'}, gold_boots:{name:'金のブーツ'},
-  bow:{name:'弓'}, arrow:{name:'矢'}, bread:{name:'パン'}, torch:{name:'松明'}, bucket:{name:'バケツ'},
-  crafting_table:{name:'作業台'}, furnace:{name:'かまど'},
-  diamond:{name:'ダイヤモンド'}, iron_ingot:{name:'鉄インゴット'}, gold_ingot:{name:'金インゴット'},
-  cobblestone:{name:'丸石'}, stick:{name:'木の棒'}, planks:{name:'板材'}, coal:{name:'石炭'},
-  wheat:{name:'小麦'}, feather:{name:'羽根'}, flint:{name:'火打石'}, string:{name:'糸'},
+  diamond_pickaxe:{name:'ダイヤモンドのツルハシ', yomi:'だいやもんど の つるはし'},
+  iron_pickaxe:   {name:'鉄のツルハシ',           yomi:'てつ の つるはし'},
+  gold_pickaxe:   {name:'金のツルハシ',            yomi:'きん の つるはし'},
+  stone_pickaxe:  {name:'石のツルハシ',            yomi:'いし の つるはし'},
+  wood_pickaxe:   {name:'木のツルハシ',            yomi:'き の つるはし'},
+  diamond_sword:  {name:'ダイヤモンドの剣',        yomi:'だいやもんど の けん'},
+  iron_sword:     {name:'鉄の剣',                  yomi:'てつ の けん'},
+  gold_sword:     {name:'金の剣',                  yomi:'きん の けん'},
+  stone_sword:    {name:'石の剣',                  yomi:'いし の けん'},
+  wood_sword:     {name:'木の剣',                  yomi:'き の けん'},
+  diamond_axe:    {name:'ダイヤモンドの斧',        yomi:'だいやもんど の おの'},
+  iron_axe:       {name:'鉄の斧',                  yomi:'てつ の おの'},
+  gold_axe:       {name:'金の斧',                  yomi:'きん の おの'},
+  stone_axe:      {name:'石の斧',                  yomi:'いし の おの'},
+  wood_axe:       {name:'木の斧',                  yomi:'き の おの'},
+  diamond_shovel: {name:'ダイヤモンドのスコップ',  yomi:'だいやもんど の すこっぷ'},
+  iron_shovel:    {name:'鉄のスコップ',            yomi:'てつ の すこっぷ'},
+  gold_shovel:    {name:'金のスコップ',            yomi:'きん の すこっぷ'},
+  stone_shovel:   {name:'石のスコップ',            yomi:'いし の すこっぷ'},
+  wood_shovel:    {name:'木のスコップ',            yomi:'き の すこっぷ'},
+  diamond_hoe:    {name:'ダイヤモンドのクワ',      yomi:'だいやもんど の くわ'},
+  iron_hoe:       {name:'鉄のクワ',                yomi:'てつ の くわ'},
+  gold_hoe:       {name:'金のクワ',                yomi:'きん の くわ'},
+  stone_hoe:      {name:'石のクワ',                yomi:'いし の くわ'},
+  wood_hoe:       {name:'木のクワ',                yomi:'き の くわ'},
+  diamond_helmet:     {name:'ダイヤモンドのヘルメット',       yomi:'だいやもんど の へるめっと'},
+  iron_helmet:        {name:'鉄のヘルメット',                 yomi:'てつ の へるめっと'},
+  gold_helmet:        {name:'金のヘルメット',                 yomi:'きん の へるめっと'},
+  diamond_chestplate: {name:'ダイヤモンドのチェストプレート', yomi:'だいやもんど の ちぇすとぷれーと'},
+  iron_chestplate:    {name:'鉄のチェストプレート',           yomi:'てつ の ちぇすとぷれーと'},
+  gold_chestplate:    {name:'金のチェストプレート',           yomi:'きん の ちぇすとぷれーと'},
+  diamond_leggings:   {name:'ダイヤモンドのレギンス',         yomi:'だいやもんど の れぎんす'},
+  iron_leggings:      {name:'鉄のレギンス',                   yomi:'てつ の れぎんす'},
+  gold_leggings:      {name:'金のレギンス',                   yomi:'きん の れぎんす'},
+  diamond_boots:      {name:'ダイヤモンドのブーツ',           yomi:'だいやもんど の ぶーつ'},
+  iron_boots:         {name:'鉄のブーツ',                     yomi:'てつ の ぶーつ'},
+  gold_boots:         {name:'金のブーツ',                     yomi:'きん の ぶーつ'},
+  bow:            {name:'弓',       yomi:'ゆみ'},
+  arrow:          {name:'矢',       yomi:'や'},
+  bread:          {name:'パン',     yomi:'ぱん'},
+  torch:          {name:'松明',     yomi:'たいまつ'},
+  bucket:         {name:'バケツ',   yomi:'ばけつ'},
+  crafting_table: {name:'作業台',   yomi:'さぎょうだい'},
+  furnace:        {name:'かまど',   yomi:'かまど'},
+  diamond:    {name:'ダイヤモンド', yomi:'だいやもんど'},
+  iron_ingot:  {name:'鉄インゴット', yomi:'てつ いんごっと'},
+  gold_ingot:  {name:'金インゴット', yomi:'きん いんごっと'},
+  cobblestone: {name:'丸石',        yomi:'まるいし'},
+  stick:       {name:'木の棒',      yomi:'き の ぼう'},
+  planks:      {name:'板材',        yomi:'いたざい'},
+  coal:        {name:'石炭',        yomi:'せきたん'},
+  wheat:       {name:'小麦',        yomi:'こむぎ'},
+  feather:     {name:'羽根',        yomi:'はね'},
+  flint:       {name:'火打石',      yomi:'ひうちいし'},
+  string:      {name:'糸',          yomi:'いと'},
 };
 Object.keys(items).forEach(k => { items[k].img = IMG[k] || ''; });
 
@@ -1319,7 +1355,7 @@ const game = {
   handleInvClick(key) {
     this.playSound('click');
     this.selectedItem = (this.selectedItem === key) ? null : key;
-    if (this.selectedItem) this.speak(items[key].name);
+    if (this.selectedItem) this.speak(items[key].yomi || items[key].name);
     this.updateInvHighlight();
   },
 
@@ -1446,7 +1482,7 @@ const game = {
     // タイトル画面が表示中は読み上げしない
     const ts = document.getElementById('title-screen');
     if (!ts || ts.style.display === 'none') {
-      this.speak(items[r.id].name + ' を作ろう！');
+      this.speak((items[r.id].yomi || items[r.id].name) + ' を つくろう！');
     }
   },
 
@@ -1478,7 +1514,7 @@ const game = {
       showChatLine(`<span style="color:#55FF55">* ${msgs[Math.floor(Math.random()*msgs.length)]}</span>`);
     }, 1100);
 
-    this.speak(items[r.id].name + ' ができた！ すごい！ やったね！');
+    this.speak((items[r.id].yomi || items[r.id].name) + ' が できた！ すごい！ やったね！');
     const msg = document.getElementById('status-msg');
     msg.textContent='🎉 せいこう！'; msg.className='success';
   },
