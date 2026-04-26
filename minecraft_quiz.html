@@ -1036,64 +1036,64 @@ function showChatLine(html, duration=3500) {
 }
 
 // =====================================================
-// IMAGE URLS — from Minecraft Japan Wiki
+// IMAGE URLS — local files in minecraft_quiz_assets/items
 // =====================================================
 const IMG = {
-  diamond_pickaxe:    'https://static.wikitide.net/minecraftjapanwiki/5/54/Diamond_Pickaxe.png',
-  iron_pickaxe:       'https://static.wikitide.net/minecraftjapanwiki/a/a2/Iron_Pickaxe.png',
-  gold_pickaxe:       'https://static.wikitide.net/minecraftjapanwiki/9/95/Golden_Pickaxe.png',
-  stone_pickaxe:      'https://static.wikitide.net/minecraftjapanwiki/4/40/Stone_Pickaxe.png',
-  wood_pickaxe:       'https://static.wikitide.net/minecraftjapanwiki/b/b3/Wooden_Pickaxe.png',
-  diamond_sword:      'https://static.wikitide.net/minecraftjapanwiki/a/a0/Diamond_Sword.png',
-  iron_sword:         'https://static.wikitide.net/minecraftjapanwiki/c/c7/Iron_Sword.png',
-  gold_sword:         'https://static.wikitide.net/minecraftjapanwiki/a/a8/Golden_Sword.png',
-  stone_sword:        'https://static.wikitide.net/minecraftjapanwiki/f/f2/Stone_Sword.png',
-  wood_sword:         'https://static.wikitide.net/minecraftjapanwiki/c/cd/Wooden_Sword.png',
-  diamond_axe:        'https://static.wikitide.net/minecraftjapanwiki/e/e8/Diamond_Axe.png',
-  iron_axe:           'https://static.wikitide.net/minecraftjapanwiki/8/81/Iron_Axe.png',
-  gold_axe:           'https://static.wikitide.net/minecraftjapanwiki/9/97/Golden_Axe.png',
-  stone_axe:          'https://static.wikitide.net/minecraftjapanwiki/2/2f/Stone_Axe.png',
-  wood_axe:           'https://static.wikitide.net/minecraftjapanwiki/1/11/Wooden_Axe.png',
-  diamond_shovel:     'https://static.wikitide.net/minecraftjapanwiki/b/bf/Diamond_Shovel.png',
-  iron_shovel:        'https://static.wikitide.net/minecraftjapanwiki/7/76/Iron_Shovel.png',
-  gold_shovel:        'https://static.wikitide.net/minecraftjapanwiki/c/ce/Golden_Shovel.png',
-  stone_shovel:       'https://static.wikitide.net/minecraftjapanwiki/4/48/Stone_Shovel.png',
-  wood_shovel:        'https://static.wikitide.net/minecraftjapanwiki/a/a4/Wooden_Shovel.png',
-  diamond_hoe:        'https://static.wikitide.net/minecraftjapanwiki/0/04/Diamond_Hoe.png',
-  iron_hoe:           'https://static.wikitide.net/minecraftjapanwiki/4/4d/Iron_Hoe.png',
-  gold_hoe:           'https://static.wikitide.net/minecraftjapanwiki/4/42/Golden_Hoe.png',
-  stone_hoe:          'https://static.wikitide.net/minecraftjapanwiki/a/a3/Stone_Hoe.png',
-  wood_hoe:           'https://static.wikitide.net/minecraftjapanwiki/b/b7/Wooden_Hoe.png',
-  diamond_helmet:     'https://static.wikitide.net/minecraftjapanwiki/4/45/Diamond_Helmet_(item).png',
-  iron_helmet:        'https://static.wikitide.net/minecraftjapanwiki/a/a2/Iron_Helmet_(item).png',
-  gold_helmet:        'https://static.wikitide.net/minecraftjapanwiki/2/26/Golden_Helmet_(item).png',
-  diamond_chestplate: 'https://static.wikitide.net/minecraftjapanwiki/4/48/Diamond_Chestplate_(item).png',
-  iron_chestplate:    'https://static.wikitide.net/minecraftjapanwiki/f/fc/Iron_Chestplate_(item).png',
-  gold_chestplate:    'https://static.wikitide.net/minecraftjapanwiki/f/f8/Golden_Chestplate_(item).png',
-  diamond_leggings:   'https://static.wikitide.net/minecraftjapanwiki/1/18/Diamond_Leggings_(item).png',
-  iron_leggings:      'https://static.wikitide.net/minecraftjapanwiki/1/10/Iron_Leggings_(item).png',
-  gold_leggings:      'https://static.wikitide.net/minecraftjapanwiki/8/8a/Golden_Leggings_(item).png',
-  diamond_boots:      'https://static.wikitide.net/minecraftjapanwiki/f/fc/Diamond_Boots_(item).png',
-  iron_boots:         'https://static.wikitide.net/minecraftjapanwiki/b/b1/Iron_Boots_(item).png',
-  gold_boots:         'https://static.wikitide.net/minecraftjapanwiki/b/b6/Golden_Boots_(item).png',
-  bow:                'https://static.wikitide.net/minecraftjapanwiki/6/65/Bow.png',
-  arrow:              'https://static.wikitide.net/minecraftjapanwiki/4/41/Arrow.png',
-  bread:              'https://static.wikitide.net/minecraftjapanwiki/e/e1/Bread.png',
-  torch:              'https://static.wikitide.net/minecraftjapanwiki/b/b2/Torch.png',
-  bucket:             'https://static.wikitide.net/minecraftjapanwiki/5/52/Bucket.png',
-  crafting_table:     'https://static.wikitide.net/minecraftjapanwiki/d/d4/Crafting_Table.png',
-  furnace:            'https://static.wikitide.net/minecraftjapanwiki/0/0f/Furnace.png',
-  diamond:            'https://static.wikitide.net/minecraftjapanwiki/e/ea/Diamond.png',
-  iron_ingot:         'https://static.wikitide.net/minecraftjapanwiki/0/0a/Iron_Ingot.png',
-  gold_ingot:         'https://static.wikitide.net/minecraftjapanwiki/2/22/Gold_Ingot.png',
-  cobblestone:        'https://static.wikitide.net/minecraftjapanwiki/6/67/Cobblestone.png',
-  stick:              'https://static.wikitide.net/minecraftjapanwiki/a/aa/Stick.png',
-  planks:             'https://static.wikitide.net/minecraftjapanwiki/c/c1/Oak_Planks.png',
-  coal:               'https://static.wikitide.net/minecraftjapanwiki/a/a7/Coal.png',
-  wheat:              'https://static.wikitide.net/minecraftjapanwiki/e/e2/Wheat.png',
-  feather:            'https://static.wikitide.net/minecraftjapanwiki/3/33/Feather.png',
-  flint:              'https://static.wikitide.net/minecraftjapanwiki/2/2e/Flint.png',
-  string:             'https://static.wikitide.net/minecraftjapanwiki/a/a0/String.png',
+  diamond_pickaxe:    'minecraft_quiz_assets/items/diamond_pickaxe.png',
+  iron_pickaxe:       'minecraft_quiz_assets/items/iron_pickaxe.png',
+  gold_pickaxe:       'minecraft_quiz_assets/items/gold_pickaxe.png',
+  stone_pickaxe:      'minecraft_quiz_assets/items/stone_pickaxe.png',
+  wood_pickaxe:       'minecraft_quiz_assets/items/wood_pickaxe.png',
+  diamond_sword:      'minecraft_quiz_assets/items/diamond_sword.png',
+  iron_sword:         'minecraft_quiz_assets/items/iron_sword.png',
+  gold_sword:         'minecraft_quiz_assets/items/gold_sword.png',
+  stone_sword:        'minecraft_quiz_assets/items/stone_sword.png',
+  wood_sword:         'minecraft_quiz_assets/items/wood_sword.png',
+  diamond_axe:        'minecraft_quiz_assets/items/diamond_axe.png',
+  iron_axe:           'minecraft_quiz_assets/items/iron_axe.png',
+  gold_axe:           'minecraft_quiz_assets/items/gold_axe.png',
+  stone_axe:          'minecraft_quiz_assets/items/stone_axe.png',
+  wood_axe:           'minecraft_quiz_assets/items/wood_axe.png',
+  diamond_shovel:     'minecraft_quiz_assets/items/diamond_shovel.png',
+  iron_shovel:        'minecraft_quiz_assets/items/iron_shovel.png',
+  gold_shovel:        'minecraft_quiz_assets/items/gold_shovel.png',
+  stone_shovel:       'minecraft_quiz_assets/items/stone_shovel.png',
+  wood_shovel:        'minecraft_quiz_assets/items/wood_shovel.png',
+  diamond_hoe:        'minecraft_quiz_assets/items/diamond_hoe.png',
+  iron_hoe:           'minecraft_quiz_assets/items/iron_hoe.png',
+  gold_hoe:           'minecraft_quiz_assets/items/gold_hoe.png',
+  stone_hoe:          'minecraft_quiz_assets/items/stone_hoe.png',
+  wood_hoe:           'minecraft_quiz_assets/items/wood_hoe.png',
+  diamond_helmet:     'minecraft_quiz_assets/items/diamond_helmet.png',
+  iron_helmet:        'minecraft_quiz_assets/items/iron_helmet.png',
+  gold_helmet:        'minecraft_quiz_assets/items/gold_helmet.png',
+  diamond_chestplate: 'minecraft_quiz_assets/items/diamond_chestplate.png',
+  iron_chestplate:    'minecraft_quiz_assets/items/iron_chestplate.png',
+  gold_chestplate:    'minecraft_quiz_assets/items/gold_chestplate.png',
+  diamond_leggings:   'minecraft_quiz_assets/items/diamond_leggings.png',
+  iron_leggings:      'minecraft_quiz_assets/items/iron_leggings.png',
+  gold_leggings:      'minecraft_quiz_assets/items/gold_leggings.png',
+  diamond_boots:      'minecraft_quiz_assets/items/diamond_boots.png',
+  iron_boots:         'minecraft_quiz_assets/items/iron_boots.png',
+  gold_boots:         'minecraft_quiz_assets/items/gold_boots.png',
+  bow:                'minecraft_quiz_assets/items/bow.png',
+  arrow:              'minecraft_quiz_assets/items/arrow.png',
+  bread:              'minecraft_quiz_assets/items/bread.png',
+  torch:              'minecraft_quiz_assets/items/torch.png',
+  bucket:             'minecraft_quiz_assets/items/bucket.png',
+  crafting_table:     'minecraft_quiz_assets/items/crafting_table.png',
+  furnace:            'minecraft_quiz_assets/items/furnace.png',
+  diamond:            'minecraft_quiz_assets/items/diamond.png',
+  iron_ingot:         'minecraft_quiz_assets/items/iron_ingot.png',
+  gold_ingot:         'minecraft_quiz_assets/items/gold_ingot.png',
+  cobblestone:        'minecraft_quiz_assets/items/cobblestone.png',
+  stick:              'minecraft_quiz_assets/items/stick.png',
+  planks:             'minecraft_quiz_assets/items/planks.png',
+  coal:               'minecraft_quiz_assets/items/coal.png',
+  wheat:              'minecraft_quiz_assets/items/wheat.png',
+  feather:            'minecraft_quiz_assets/items/feather.png',
+  flint:              'minecraft_quiz_assets/items/flint.png',
+  string:             'minecraft_quiz_assets/items/string.png',
 };
 
 const INVENTORY_KEYS = ['diamond','iron_ingot','gold_ingot','cobblestone','planks','stick','coal','wheat','feather','flint','string'];
@@ -1441,11 +1441,45 @@ const game = {
     });
   },
 
+  normalizePattern(cells) {
+    const filled = [];
+    cells.forEach((key, i) => {
+      if (key) filled.push({key, r: Math.floor(i / 3), c: i % 3});
+    });
+    if (!filled.length) return [];
+
+    const minR = Math.min(...filled.map(p => p.r));
+    const maxR = Math.max(...filled.map(p => p.r));
+    const minC = Math.min(...filled.map(p => p.c));
+    const maxC = Math.max(...filled.map(p => p.c));
+    const pattern = [];
+
+    for (let r = minR; r <= maxR; r++) {
+      const row = [];
+      for (let c = minC; c <= maxC; c++) {
+        row.push(cells[r * 3 + c] || null);
+      }
+      pattern.push(row);
+    }
+    return pattern;
+  },
+
+  patternsEqual(a, b) {
+    if (a.length !== b.length) return false;
+    for (let r = 0; r < a.length; r++) {
+      if (a[r].length !== b[r].length) return false;
+      for (let c = 0; c < a[r].length; c++) {
+        if ((a[r][c] || null) !== (b[r][c] || null)) return false;
+      }
+    }
+    return true;
+  },
+
   checkMatch() {
     if (!this.currentRecipe) return false;
-    for (let r=0;r<3;r++) for (let c=0;c<3;c++)
-      if ((this.currentRecipe.grid[r][c]||null) !== (this.gridState[r*3+c]||null)) return false;
-    return true;
+    const recipePattern = this.normalizePattern(this.currentRecipe.grid.flat());
+    const currentPattern = this.normalizePattern(this.gridState);
+    return this.patternsEqual(recipePattern, currentPattern);
   },
 
   resetGrid() {
